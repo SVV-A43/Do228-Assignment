@@ -1,7 +1,7 @@
 # Do228-Assignment
 [Link to Overleaf Report](www.overleaf.com)
 
-## Data Dornier Do 228 (Refer to the drawings)
+## Data Dornier Do 228
 
 | Property                                                                      | Symbol | Value | Unit |
 |-------------------------------------------------------------------------------|--------|-------|------|
