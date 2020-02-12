@@ -1,5 +1,5 @@
 # Do228-Assignment
-[Link to Overleaf Simulation Plan](https://www.overleaf.com/9943845513vzbqxpmpdzdj)
+[Link to Simulation Plan](https://www.overleaf.com/9943845513vzbqxpmpdzdj)
 
 ## Simulation Plan Requirements
 - [ ] Report Overview
