@@ -1,6 +1,45 @@
 # Do228-Assignment
 [Link to Overleaf Report](www.overleaf.com)
 
+## Simulation Plan Requirements
+- [ ] Report Overview
+    - [ ] Textbook style layout (min 10pt font, min 2.2cm margins)
+    - [ ] Task division
+    
+- [ ] Problem Introduction
+    - [ ] All Input/Output Variables
+    - [ ] Reference Frames
+    - [ ] Free Body Diagram
+
+- [ ] Flow Chart
+    - [ ] All Code Blocks
+    - [ ] Logical Flow of linked variables
+    - [ ] All inputs/outputs
+    - [ ] Easy to read
+
+- [ ] Verification Model
+    - [ ] Description of method and motivation why it is a good model to verify the numerical model
+    - [ ] Assumptions by verification model
+    
+- [ ] Numerical Model
+    - [ ] Main Assumtions
+    - [ ] Effects of each assumption
+    - [ ] Justification of validity of each assumption
+    - [ ] Structural model with no mistakes
+    - [ ] Numerical Model with no mistakes
+    
+- [ ] Verification
+    - [ ] Several specific proposed unit tests & well described
+    - [ ] Multiple larger system tests proposed & well described
+    - [ ] Accuracy of tests given and motivated
+    - [ ] Full model test coverage
+    
+- [ ] Validation
+    - [ ] Proposed validation tests well described
+    - [ ] Validation data efficiently used
+    - [ ] Plan for assessing/addressing discrepancies that is related to assumptions and data
+
+
 ## Data Dornier Do 228
 
 | Property                                                                      | Symbol | Value | Unit |
