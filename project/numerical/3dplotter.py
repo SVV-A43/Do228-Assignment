@@ -24,7 +24,7 @@ x = []
 
 P = []
 
-datastring = open('/project/numerical/aero_loading_data/aerodynamicloaddo228.dat')
+datastring = open('aero_loading_data/aerodynamicloaddo228.dat')
 
 df= pd.DataFrame(datastring)
 df.columns=['Data']
@@ -93,7 +93,7 @@ ax.set_ylabel('Chordwise coordinate z [m] ')
 ax.set_zlabel('Aerodynamic Load p [kN/m^2]')
 ax.view_init(10, 45)
 ax.set_title('Aerodynamic loading')
-plt.show(ax)
+plt.show()
 
 
 
