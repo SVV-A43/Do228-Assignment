@@ -1,5 +1,0 @@
-print('this is test')
-
-
-
-print('Pooh's laptop')
