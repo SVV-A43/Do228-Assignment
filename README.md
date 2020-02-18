@@ -17,6 +17,7 @@ If error:
     * If merge failed: 
         - Resolve conflicts in the python files
         - Re-run affected files
+        - <kbd>git add .</kbd>
         - <kbd>git commit -m "Merge description"</kbd>
 
 6) <kbd>git push</kbd>
