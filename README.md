@@ -1,43 +1,31 @@
+# Git Commands
+
+### ALWAYS START each work session with: <kbd>git pull</kbd>
+
+Then, after making changes to files:
+
+1) <kbd>git add .</kbd>
+2) <kbd>git status</kbd>
+3) <kbd>git commit -m "Describe what you changed here"</kbd>
+4) <kbd>git push</kbd>
+
+If error:
+
+5) <kbd>git pull</kbd>
+    * If merge is successful: 
+        - Confirm merge with: <kbd>ESC</kbd>, <kbd>:</kbd>, <kbd>wq</kbd>, <kbd>ENTER</kbd>
+    * If merge failed: 
+        - Resolve conflicts in the python files
+        - Re-run affected files
+        - <kbd>git commit -m "Merge description"</kbd>
+
+6) <kbd>git push</kbd>
+
+
+
 # Do228-Assignment
 [Link to SVV Structural REPORT](https://www.overleaf.com/8982983834rsxvhtzfgqfv)
 
-## Simulation Plan Requirements
-- [ ] Report Overview
-    - [ ] Textbook style layout (min 10pt font, min 2.2cm margins)
-    - [ ] Task division
-    
-- [ ] Problem Introduction
-    - [ ] All Input/Output Variables
-    - [ ] Reference Frames
-    - [ ] Free Body Diagram
-
-- [ ] Flow Chart
-    - [ ] All Code Blocks
-    - [ ] Logical Flow of linked variables
-    - [ ] All inputs/outputs
-    - [ ] Easy to read
-
-- [ ] Verification Model
-    - [ ] Description of method and motivation why it is a good model to verify the numerical model
-    - [ ] Assumptions by verification model
-    
-- [ ] Numerical Model
-    - [ ] Main Assumtions
-    - [ ] Effects of each assumption
-    - [ ] Justification of validity of each assumption
-    - [ ] Structural model with no mistakes
-    - [ ] Numerical Model with no mistakes
-    
-- [ ] Verification
-    - [ ] Several specific proposed unit tests & well described
-    - [ ] Multiple larger system tests proposed & well described
-    - [ ] Accuracy of tests given and motivated
-    - [ ] Full model test coverage
-    
-- [ ] Validation
-    - [ ] Proposed validation tests well described
-    - [ ] Validation data efficiently used
-    - [ ] Plan for assessing/addressing discrepancies that is related to assumptions and data
 
 
 ## Data Dornier Do 228
