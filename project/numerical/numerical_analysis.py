@@ -2,7 +2,7 @@
 
 # Imports
 import numpy as np
-from project.numerical.aileron_geometry import geometry
+from project.numerical.aileron_geometry import AileronGeometry
 
 
 # CODE...
