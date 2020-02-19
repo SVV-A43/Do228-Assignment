@@ -27,9 +27,6 @@ for i in range(sz):
 
 
 
-
-
-
 plt.plot(x,y)
 plt.axis('equal')
 plt.show()
