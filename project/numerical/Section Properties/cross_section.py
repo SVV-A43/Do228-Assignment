@@ -27,6 +27,20 @@ for i in range(sz):
 
 
 
+
+# Shear centre
+
+def res_stringer(s, stiff_locs):
+    sum = 0
+    for stringer in stiff_locs:
+        if s > stringer[si]:
+            sum += stringer[area] * stringer[yi]
+
+
+qb = np.zeros(sz)  # contains all qbs for each
+for i in range(1, sz):
+    qb[i] = -(1/Izz)*( t*num_int(y[i] + res_stringer(s, stiff_locs)) + qb[i-1] )
+
 plt.plot(x,y)
 plt.axis('equal')
 plt.show()
