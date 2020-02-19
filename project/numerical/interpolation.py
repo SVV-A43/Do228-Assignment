@@ -1,7 +1,9 @@
 # Imports
 import numpy as np
-import pytest
-import matplotlib.pyplot as plt
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next two imports
 from project.numerical.aileron_geometry import AileronGeometry
 
 

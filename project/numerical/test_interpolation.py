@@ -1,7 +1,11 @@
-from project.numerical.interpolation import InterpolationRBF
-import pytest
+import os
+import sys
 import numpy as np
 import unittest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next two imports
+from project.numerical.interpolation import InterpolationRBF
+
 
 class InterpolationTests(unittest.TestCase):
 
@@ -30,3 +34,7 @@ class InterpolationTests(unittest.TestCase):
         error = np.abs(f_actual-f_interp)
 
         assert error < 0.3 #TODO Needs fine tuning for acceptable threshold
+
+if __name__ == '__main__':
+    inter_test = InterpolationTests()
+    inter_test.test_rbf()
