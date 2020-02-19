@@ -33,7 +33,7 @@ class InterpolationTests(unittest.TestCase):
 
         error = np.abs(f_actual-f_interp)
 
-        assert error < 0.3 #TODO Needs fine tuning for acceptable threshold
+        assert error < 0.001
 
 if __name__ == '__main__':
     inter_test = InterpolationTests()

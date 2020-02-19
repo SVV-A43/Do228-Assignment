@@ -29,7 +29,9 @@ class InterpolationRBF():
         if coeffs_path is None:
             self.__coeffs_calc()
         else:
-            self.__coeffs = np.genfromtxt(coeffs_path, delimiter=',')
+            loaded_coeff = np.genfromtxt(coeffs_path, delimiter=',')
+            self.__coeffs = np.array([loaded_coeff]).T # Convert to a 2d array with 1 column
+            print(self.__coeffs.shape)
 
 
 
@@ -118,7 +120,7 @@ if __name__ == '__main__':
     data = load_press_data()
 
     # Initialize Interpolation Object
-    inter_fn = InterpolationRBF(data, basis='linear')
+    inter_fn = InterpolationRBF(data, basis='linear', coeffs_path='rbf_coefficients_linear.csv')
 
     print(inter_fn.function_coefficients())
 
@@ -128,6 +130,10 @@ if __name__ == '__main__':
 
     val = inter_fn.interpolate(pt)
     val2 = inter_fn.interpolate(pt2)
-    print(val)
+    print(f'Point1 on-point of known data. Actual = {data[1][2]}; Interpolated = {val}')
+
+    estimate2 = (data[0][2] + data[1][2]) /2
+    print(f'Point2 mid-point between 1st and 2nd point. '
+          f'Manually estimated (average) = {estimate2};  Interpolated = {val2}')
 
 
