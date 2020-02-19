@@ -6,7 +6,7 @@ Then, after making changes to files:
 
 1) <kbd>git add .</kbd>
 2) <kbd>git status</kbd>
-3) <kbd>git commit -m "Describe what you changed here"</kbd>
+3) <kbd>git commit -m "Describe what you changed here"</kbd> Use a short but useful description of the changes
 4) <kbd>git push</kbd>
 
 If error:
