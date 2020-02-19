@@ -43,8 +43,8 @@ class AileronGeometry():
         for j in range(self.__num_pts_chord):
             self.__z_coords.append(self.__zi(j+1))
 
-        # Create Array of the (z,x coordinates where the load data is found) LOCAL COORD SYSTEM AS DEFINED IN READER fig3
-        # The order [z, x] here is to match that of the loading data, which is also z-coord per row
+        # Create Array of the (z,x coordinates where the load loading_data_prepped is found) LOCAL COORD SYSTEM AS DEFINED IN READER fig3
+        # The order [z, x] here is to match that of the loading loading_data_prepped, which is also z-coord per row
         self.__load_coords = np.empty((self.__num_pts_chord, self.__num_pts_span), dtype=object)
         for z in range(self.__num_pts_chord):
             for x in range(self.__num_pts_span):
