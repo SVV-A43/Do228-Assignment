@@ -63,4 +63,10 @@ class AileronGeometry():
 
 if __name__ == '__main__':
     aileron = AileronGeometry()
+    x = aileron.station_x_coords()
+    z = aileron.station_z_coords()
     print(aileron.station_x_coords())
+    print(aileron.station_z_coords())
+    import matplotlib.pyplot as plt
+    plt.plot(x,z)
+    plt.show()
