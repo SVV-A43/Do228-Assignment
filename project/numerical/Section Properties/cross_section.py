@@ -15,8 +15,9 @@ for i in range(sz):
     if x[i] <= h/2:
         y[i] = sqrt((h/2)**2-(x[i]-h/2)**2)
     else:
-        y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*0.515)
+        y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C)
     perimeter += hypot(dx, y[i]-y[i-1])
+
 
 print(perimeter)
 
