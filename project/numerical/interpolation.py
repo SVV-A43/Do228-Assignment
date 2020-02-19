@@ -2,6 +2,7 @@
 import numpy as np
 import sys
 import os
+from matplotlib import pyplot as plt
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next two imports
 from project.numerical.aileron_geometry import AileronGeometry
@@ -116,6 +117,28 @@ def load_press_data():
 
 
 if __name__ == '__main__':
+
+    # Comparison to existing RBF Function
+    # loading_data_prepped = data_to_xyf()
+
+    # Methods need to be changed to array form
+
+
+    loading_data_prepped = load_press_data()
+
+    from scipy.interpolate import Rbf
+
+    rbfi = Rbf(Z, data_used[:, 2], function=base, epsilon=ep)
+    R = rbfi(Z)
+
+   
+
+
+
+
+
+
+
     # data = data_to_xyf()
     data = load_press_data()
 
