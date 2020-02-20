@@ -110,45 +110,45 @@ if __name__ == '__main__':
     from scipy.interpolate import Rbf
 
     aileron = AileronGeometry()
-    x, z, p = aileron.data_x_z_p()
+    # x, z, p = aileron.data_x_z_p()
 
     # Use single station
-    # x, z, p = select_station(6)
+    x, z, p = select_station(6)
 
 
     # Create instance of our interpolation class
-    my_i = InterpolateRBF(x, z, p, coeff_path='rbf_coefficients_linear.csv')
+    my_i = InterpolateRBF(x, z, p) #, coeff_path='rbf_coefficients_linear.csv'
 
     # Create reference radial basis function
-    rbfi = Rbf(x, z, p, function='linear')
+    # rbfi = Rbf(x, z, p, function='linear')
 
     # Generate points to test
     zi = np.linspace(0.001, -0.5, len(z))
-    xi = np.array([x[i] for i in range(len(x))])
+    xi = np.array([x[0] for i in range(len(x))])
     # xi = [1.5]
     # zi = [-0.1]
 
-    di = rbfi(xi, zi)  # interpolated values
-    print(di)
+    # di = rbfi(xi, zi)  # interpolated values
+    # print(di)
 
     fi = my_i.interpolate(xi, zi)
     print(fi)
 
     # print(f'Check for equal: {(fi==di).all()}')
     #
-    # plt.scatter(z, p, c='green')
+    plt.scatter(z, p, c='green')
     # plt.plot(zi, di, c='red')
-    # plt.plot(zi, fi, c='blue')
-    # plt.show()
-    fig = plt.figure()
-    ax = plt.axes(projection='3d')
-    ax.scatter3D(x, z, p, c=p, cmap='Greens')
-    ax.plot3D(xi, zi, di, 'red')
-    ax.plot3D(xi, zi, fi, 'blue')
-    # ax.plot_trisurf(x, z, P_arr, cmap='viridis', edgecolor='none')
-    ax.set_xlabel('Spanwise coordinate x [m]')
-    ax.set_ylabel('Chordwise coordinate z [m] ')
-    ax.set_zlabel('Aerodynamic Load p [kN/m^2]')
-    ax.view_init(10, 45)
-    ax.set_title('Aerodynamic loading')
+    plt.plot(zi, fi, c='blue')
     plt.show()
+    # fig = plt.figure()
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(x, z, p, c=p, cmap='Greens')
+    # ax.plot3D(xi, zi, di, 'red')
+    # ax.plot3D(xi, zi, fi, 'blue')
+    # # ax.plot_trisurf(x, z, P_arr, cmap='viridis', edgecolor='none')
+    # ax.set_xlabel('Spanwise coordinate x [m]')
+    # ax.set_ylabel('Chordwise coordinate z [m] ')
+    # ax.set_zlabel('Aerodynamic Load p [kN/m^2]')
+    # ax.view_init(10, 45)
+    # ax.set_title('Aerodynamic loading')
+    # plt.show()
