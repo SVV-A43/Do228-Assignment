@@ -24,6 +24,7 @@ stiff_counter = 1
 perimeter = m.pi*(h/2) + 2*m.sqrt((h/2)**2+(C-h/2)**2)
 spacing = perimeter/n
 perimeter_addition = 0
+perimeter_check = 0
 for i in range(sz):
     if x[i] <= h/2:
         y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
@@ -32,6 +33,7 @@ for i in range(sz):
 
     perimeter_old = perimeter_addition
     perimeter_addition += m.hypot(dx, y[i]-y[i-1])
+    perimeter_check += m.hypot(dx, y[i]-y[i-1])
     if perimeter_addition > spacing and perimeter_old < spacing:
         if perimeter_addition - spacing <= perimeter_old - spacing:
             stiff_loc[stiff_counter,0] = x[i]
@@ -85,7 +87,7 @@ semi_cont_yy = m.pi*(h/2)**3*t_skin/2 + m.pi*h/2*t_skin*((h/2-h/m.pi)-x_centroid
 
 Iyy = stiff_cont_yy + spar_cont_yy + 2*plates_cont_yy + semi_cont_yy
 
-Iyy = 5.377416790820396*10**-05 #Correct value, take out later
+# Iyy = 5.377416790820396*10**-05 #Correct value, take out later
 
 
 # Shear centre
@@ -144,8 +146,9 @@ def value_integrate(a,b,func):
     return result
 
 
-a = variable_integrator([[2,4],[1,2]]) #2s + 4s^2
-b = value_integrate(0,m.pi/2,[[2],['c']]) #2costheta from 0 to pi/2
+a = variable_integrator([[2,4],[1,2]]) #2s + 4s^2 = s^2 + 4/3s^3
+b = value_integrate(0,m.pi/2,[[2],['c']]) #2costheta from 0 to pi/2 = 2sintheta|0,pi/2 = 2
+
 # qb of section 1:
 # def qb_in_variable_form():
 
