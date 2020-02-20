@@ -23,7 +23,7 @@ class InterpolationTests(unittest.TestCase):
         rbfi = Rbf(x, z, d, function='linear')
 
         # Generate points to test
-        xi = zi = np.linspace(0, 1, 20)
+        xi = zi = np.linspace(0, 1, 200)
         # xi = zi = [0.5]
 
         di = rbfi(xi, zi)  # interpolated values

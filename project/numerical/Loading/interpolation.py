@@ -9,7 +9,7 @@ from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class InterpolateRBF():
-    def __init__(self, X, Z, F, basis='linear', coeff_path=None):
+    def __init__(self, *data_arrays, basis='linear', coeff_path=None):
         '''
         :param X: 1D array of x-coordinates
         :param Z: 1D array of z-coordinates
@@ -19,8 +19,11 @@ class InterpolateRBF():
         self._basis = basis
 
         # Save initial data
-        self._known_coords = np.array([np.asarray(X), np.asarray(Z)])
-        self._known_data = np.asarray(F)
+        coords = []
+        for ar in data_arrays[:-1]:
+            coords.append(np.asarray(ar))
+        self._known_coords = np.array(coords)
+        self._known_data = np.asarray(data_arrays[-1])
 
         # Compute coefficients:
         if coeff_path is None:
@@ -60,7 +63,7 @@ class InterpolateRBF():
 
         A = np.zeros((n,n))
 
-        for i in tqdm(range(n)):
+        for i in range(n):
             for j in range(n):
                 r = self._dist_r(self._known_coords[:, i], self._known_coords[:, j])
                 A[i][j] = self._phi(r)
@@ -69,21 +72,26 @@ class InterpolateRBF():
         # np.savetxt('rbf_coefficients_linear.csv', self.coefficients, delimiter=',')
 
 
-    def interpolate(self, X_in, Z_in):
-        if isinstance(X_in, float) or isinstance(X_in, int):
-            X_in = [X_in]
-        if isinstance(Z_in, float) or isinstance(Z_in, int):
-            Z_in = [Z_in]
-        X_in = np.asarray(X_in)
-        Z_in = np.asarray(Z_in)
-        # Array of points to interpolate, row 0 = X values, row 1 = Y values
-        pts_in = np.array([X_in, Z_in])
+    def interpolate(self, *coord_arrays):
+        coord_ls = []
+        for ar in coord_arrays:
+            coord_ls.append(np.asarray(ar))
+        pts_in = np.array(coord_ls)
+        #
+        # if isinstance(X_in, float) or isinstance(X_in, int):
+        #     X_in = [X_in]
+        # if isinstance(Z_in, float) or isinstance(Z_in, int):
+        #     Z_in = [Z_in]
+        # X_in = np.asarray(X_in)
+        # Z_in = np.asarray(Z_in)
+        # # Array of points to interpolate, row 0 = X values, row 1 = Y values
+        # pts_in = np.array([X_in, Z_in])
 
         n = len(self.coefficients) # Number of terms in the final interpolant
 
         self.phi_x = np.zeros((len(pts_in[0,:]), n)) # Basis terms
 
-        for i in range(len(X_in)):
+        for i in range(len(pts_in[0, :])):
             for j in range(n):
                 r = self._dist_r(pts_in[:, i], self._known_coords[:, j])
                 self.phi_x[i,j] = self._phi(r)
@@ -114,6 +122,8 @@ if __name__ == '__main__':
 
     # Use single station
     x, z, p = select_station(6)
+
+
 
 
     # Create instance of our interpolation class

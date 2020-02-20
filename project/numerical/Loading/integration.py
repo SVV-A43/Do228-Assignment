@@ -1,7 +1,64 @@
 import numpy as np
+import os
+import sys
+from tqdm import tqdm
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
+from project.numerical.Loading.aileron_geometry import AileronGeometry
+from project.numerical.Loading.interpolation import InterpolateRBF, select_station
 
 
-print('hellow')
+
+def def_integral(fn, start, stop, num_bins=100 ):
+    '''
+    Definite numerical integration of a 1 variable function
+    :param start: start coordinate
+    :param stop: end coordinate
+    :param num_bins: number of bins to use
+    :param fn: function of a single variable
+    :return:
+    '''
+    steps = np.linspace(start, stop, num_bins)
+    width = steps[1] - steps[0] # Uniform bin width
+
+    # Change this to general function
+    fi = fn.interpolate(steps)
+
+    areas = (fi[:-1] + fi[1:]) / 2 * width
+    return areas.sum()
+
+
+def station_loads(num_bins):
+    q_x = []
+    x_coord = []
+    ail = AileronGeometry()
+    for station in tqdm(range(ail.span_stations)):
+        x, z, p = ail.station_data(station)
+        interpolant = InterpolateRBF(z, p)
+        station_load = def_integral(interpolant, min(z), max(z), num_bins=num_bins)
+        q_x.append(station_load)
+        x_coord.append(x[0])
+    out = np.array([q_x, x_coord])
+
+    return out
+
+
+
 
 if __name__ == '__main__':
-    print('first')
+
+    # ail = AileronGeometry()
+    # min_z = min(ail.station_z_coords())
+    # max_z = max(ail.station_z_coords())
+    #
+    # station_id = 5
+    # x, z, p = ail.station_data(station_id)
+    # # xi = [0 for i in range(len(x))]
+    #
+    # interpolant = InterpolateRBF(z, p)
+    #
+    #
+    # area = def_integral(min_z, max_z, 100, x_coord=x[0], fn=interpolant, fn2=rbfi)
+
+    station_loads(100)
+
