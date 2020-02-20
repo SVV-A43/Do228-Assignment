@@ -24,6 +24,7 @@ stiff_counter = 1
 perimeter = m.pi*(h/2) + 2*m.sqrt((h/2)**2+(C-h/2)**2)
 spacing = perimeter/n
 perimeter_addition = 0
+perimeter_check = 0
 for i in range(sz):
     if x[i] <= h/2:
         y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
@@ -32,6 +33,7 @@ for i in range(sz):
 
     perimeter_old = perimeter_addition
     perimeter_addition += m.hypot(dx, y[i]-y[i-1])
+    perimeter_check += m.hypot(dx, y[i]-y[i-1])
     if perimeter_addition > spacing and perimeter_old < spacing:
         if perimeter_addition - spacing <= perimeter_old - spacing:
             stiff_loc[stiff_counter,0] = x[i]
@@ -85,15 +87,98 @@ semi_cont_yy = m.pi*(h/2)**3*t_skin/2 + m.pi*h/2*t_skin*((h/2-h/m.pi)-x_centroid
 
 Iyy = stiff_cont_yy + spar_cont_yy + 2*plates_cont_yy + semi_cont_yy
 
-Iyy = 5.377416790820396*10**-05 #Correct value, take out later
+# Iyy = 5.377416790820396*10**-05 #Correct value, take out later
 
-'''    
-plt.plot(stiff_loc[:,0],stiff_loc[:,1], marker="o")    
-plt.plot(x,y)
-plt.plot(x_centroid,0, marker="o")
-plt.axis('equal')
-plt.show()
-'''
+
+# Shear centre
+"""
+Due to symmetry Izy = 0. Shear centre must be located on the z-axis. To find the shear center location eta in the z-axis
+A unit load Sy and Sz = 0 is applied. One cut is made in the spar and one in the circular section and qb = 0 at the cuts
+
+
+"""
+I_zy = 0
+I_zz = 1
+I_yy = 1
+Vy = 1
+Vx = 0
+
+def variable_integrator(func):
+    """func is a list with lists containing the constants in the first list, and coefficients in the second list
+    if coefficient is not a number, i.e. sin it should be written as s, if it cosine it is c"""
+    constants = func[0]
+    coefficients = func[1]
+    for i in range(len(coefficients)):
+        if type(coefficients[i]) == int:
+            constants[i] *= 1/(coefficients[i]+1)
+            coefficients[i] += 1
+
+        elif coefficients[i] == 's':
+            constants[i] *= -1
+            coefficients[i] = 'c'
+
+        elif coefficients[i] == 'c':
+            constants[i] *= 1
+            coefficients[i] = 's'
+    return [constants,coefficients]
+
+def value_integrate(a,b,func):
+    """Integrates a function going from a to b"""
+    constants = func[0]
+    coefficients = func[1]
+    result = 0
+    for i in range(len(coefficients)):
+        if type(coefficients[i]) == int:
+            constants[i] *= 1/(coefficients[i]+1)
+            coefficients[i] += 1
+            result += (constants[i]*b**coefficients[i] - constants[i]*a**coefficients[i])
+
+        elif coefficients[i] == 's':
+            constants[i] *= -1
+            coefficients[i] = 'c'
+            result += constants[i]*(m.cos(b) - m.cos(a))
+
+
+        elif coefficients[i] == 'c':
+            constants[i] *= 1
+            coefficients[i] = 's'
+            result += constants[i]*(m.sin(b) - m.sin(a))
+    return result
+
+
+a = variable_integrator([[2,4],[1,2]]) #2s + 4s^2 = s^2 + 4/3s^3
+b = value_integrate(0,m.pi/2,[[2],['c']]) #2costheta from 0 to pi/2 = 2sintheta|0,pi/2 = 2
+
+# qb of section 1:
+# def qb_in_variable_form():
+
+
+# def res_stringer(s, stiff_locs):
+#     sum = 0
+#     for stringer in stiff_locs:
+#         if s > stringer[si]:
+#             sum += stringer[area] * stringer[yi]
+#
+#
+# qb = np.zeros(sz)  # contains all qbs for each
+# for i in range(1, sz):
+#     qb[i] = -(1/Izz)*( t*num_int(y[i] + res_stringer(s, stiff_locs)) + qb[i-1] )
+
+# Moments of inertia
+
+
+# plt.plot(stiff_loc[:,0],stiff_loc[:,1], marker="o")
+# plt.plot(x,y)
+# plt.plot(x,-y)
+# plt.plot(x_centroid,0, marker="o")
+# plt.axis('equal')
+# plt.show()
+
+
+print("perimeter =", perimeter)
+print(stiff_loc)
+print(A_total)
 print(x_centroid)
 print(Ixx)
 print(Iyy)
+
