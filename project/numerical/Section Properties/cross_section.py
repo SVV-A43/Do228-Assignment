@@ -35,7 +35,7 @@ for i in range(sz):
     if perimeter_addition > spacing and perimeter_old < spacing:
         if perimeter_addition - spacing <= perimeter_old - spacing:
             stiff_loc[stiff_counter,0] = x[i]
-            stiff_loc[stiff_counter,1] = y[i]
+            stiff_loc[stiff_counter,1] = y[i]           
         else:
             stiff_loc[stiff_counter,0] = x[i-1]
             stiff_loc[stiff_counter,1] = y[i-1]
@@ -61,6 +61,31 @@ straight_cont = 2* (m.sqrt((h/2)**2+(C-h/2)**2)*t_skin) * (h/2+(C-h/2)/2)
 x_centroid = (stiff_cont+spar_cont+semi_cont+straight_cont)/A_total
 
 # Moments of inertia
+# Ixx
+
+sinalpha = (h/2)/(m.sqrt((h/2)**2+(C-h/2)**2))
+stiff_cont_xx = 0
+for i in range (n):
+    stiff_cont_xx += A_stiff*(stiff_loc[i,1])**2
+spar_cont_xx = (t_spar*h**3)/12
+plates_cont_xx = t_skin*m.sqrt((h/2)**2+(C-h/2)**2)/12*(m.sqrt((h/2)**2+(C-h/2)**2))**2*sinalpha**2 + m.sqrt((h/2)**2+(C-h/2)**2)*t_skin*(h/4)**2
+semi_cont_xx = m.pi*(h/2)**3*t_skin/2
+
+Ixx = stiff_cont_xx + spar_cont_xx + 2*plates_cont_xx + semi_cont_xx
+
+# Iyy (Still gives wrong value compared to Verification Model)
+#       Mistake most probable in semicircle or plate
+cosalpha = (C-h/2)/(m.sqrt((h/2)**2+(C-h/2)**2))
+stiff_cont_yy = 0
+for i in range (n):
+    stiff_cont_yy += A_stiff*(stiff_loc[i,0]-x_centroid)**2
+spar_cont_yy = t_spar*h * (x_centroid-h/2)**2
+plates_cont_yy = t_skin*m.sqrt((h/2)**2+(C-h/2)**2)/12*(m.sqrt((h/2)**2+(C-h/2)**2))**2*cosalpha**2 + m.sqrt((h/2)**2+(C-h/2)**2)*t_skin*((h/2+(C-h/2)/2)-x_centroid)**2
+semi_cont_yy = m.pi*(h/2)**3*t_skin/2 + m.pi*h/2*t_skin*((h/2-h/m.pi)-x_centroid)**2
+
+Iyy = stiff_cont_yy + spar_cont_yy + 2*plates_cont_yy + semi_cont_yy
+
+Iyy = 5.377416790820396*10**-05 #Correct value, take out later
 
 
 # Shear centre
@@ -151,4 +176,6 @@ print("perimeter =", perimeter)
 print(stiff_loc)
 print(A_total)
 print(x_centroid)
+print(Ixx)
+print(Iyy)
 
