@@ -3,11 +3,9 @@ import sys
 import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next two imports
-from project.numerical.aileron_geometry import AileronGeometry
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
+from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class InterpolateRBF():
@@ -116,7 +114,7 @@ if __name__ == '__main__':
 
     # Use single station
     # x, z, p = select_station(6)
-    # xi = np.array([x[0] for i in range(len(z))])
+
 
     # Create instance of our interpolation class
     my_i = InterpolateRBF(x, z, p, coeff_path='rbf_coefficients_linear.csv')
@@ -125,9 +123,10 @@ if __name__ == '__main__':
     rbfi = Rbf(x, z, p, function='linear')
 
     # Generate points to test
-    # zi = np.linspace(0.001, -0.5, len(z))
-    xi = [1.5]
-    zi = [-0.1]
+    zi = np.linspace(0.001, -0.5, len(z))
+    xi = np.array([x[i] for i in range(len(x))])
+    # xi = [1.5]
+    # zi = [-0.1]
 
     di = rbfi(xi, zi)  # interpolated values
     print(di)
@@ -144,7 +143,8 @@ if __name__ == '__main__':
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     ax.scatter3D(x, z, p, c=p, cmap='Greens')
-    ax.scatter3D(xi, zi, fi, c=fi, cmap='inferno')
+    ax.plot3D(xi, zi, di, 'red')
+    ax.plot3D(xi, zi, fi, 'blue')
     # ax.plot_trisurf(x, z, P_arr, cmap='viridis', edgecolor='none')
     ax.set_xlabel('Spanwise coordinate x [m]')
     ax.set_ylabel('Chordwise coordinate z [m] ')

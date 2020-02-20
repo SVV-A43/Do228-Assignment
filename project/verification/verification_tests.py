@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
-from project.numerical.radial_basis import InterpolateRBF
+from project.numerical.Loading.radial_basis import InterpolateRBF
 
 # Group A43 tests
 
