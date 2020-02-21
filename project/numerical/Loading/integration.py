@@ -28,6 +28,26 @@ def def_integral(fn, start, stop, num_bins=1000):
     areas = (fi[:-1] + fi[1:]) / 2 * width
     return areas.sum()
 
+def indef_integral(fn, start, stop, num_bins=1000):
+    '''
+    Definite numerical integration of a 1 variable function
+    :param start: start coordinate
+    :param stop: end coordinate
+    :param num_bins: number of bins to use
+    :param fn: function of a single variable
+    :return:
+    '''
+    steps = np.linspace(start, stop, num_bins)
+    width = steps[1] - steps[0] # Uniform bin width
+
+    fi = []
+    for x in steps:
+        fi.append(def_integral(fn, start, x, num_bins=num_bins))
+
+    fi = np.array(fi)
+
+    areas = (fi[:-1] + fi[1:]) / 2 * width
+    return areas.sum()
 
 def station_loads(**kwargs):
     num_bins = kwargs.pop('num_bins', 1000)
@@ -69,15 +89,20 @@ def check_fn_simplification():
 
 if __name__ == '__main__':
 
-    # ail = AileronGeometry()
+
+
+    ail = AileronGeometry()
     # min_z = min(ail.station_z_coords())
     # max_z = max(ail.station_z_coords())
     #
-    # station_id = 5
-    # x, z, p = ail.station_data(station_id)
-    # # xi = [0 for i in range(len(x))]
-    #
-    # interpolant = InterpolateRBF(z, p)
+    station_id = 5
+    x, z, p = ail.station_data(station_id)
+    # xi = [0 for i in range(len(x))]
+
+    int_fn = InterpolateRBF(z, p)
+
+    second_int = indef_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
+
     #
     #
     # area = def_integral(min_z, max_z, 100, x_coord=x[0], fn=interpolant, fn2=rbfi)
