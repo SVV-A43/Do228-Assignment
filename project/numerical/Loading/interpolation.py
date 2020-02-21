@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import os
-from tqdm import tqdm
+
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
@@ -9,7 +9,7 @@ from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class InterpolateRBF():
-    def __init__(self, *data_arrays, basis='linear', coeff_path=None):
+    def __init__(self, *data_arrays, basis='linear', coeff_path=None, save_path=None):
         '''
         :param X: 1D array of x-coordinates
         :param Z: 1D array of z-coordinates
@@ -17,6 +17,7 @@ class InterpolateRBF():
         :param basis: 'linear'
         '''
         self._basis = basis
+        self.__save_path = save_path
 
         # Save initial data
         coords = []
@@ -69,27 +70,21 @@ class InterpolateRBF():
                 A[i][j] = self._phi(r)
 
         self.coefficients = np.linalg.solve(A, self._known_data)
-        # np.savetxt('rbf_coefficients_linear.csv', self.coefficients, delimiter=',')
+        if self.__save_path:
+            np.savetxt(self.__save_path, self.coefficients, delimiter=',')
 
 
     def interpolate(self, *coord_arrays):
         coord_ls = []
         for ar in coord_arrays:
+            if isinstance(ar, int) or isinstance(ar, float):
+                ar = [ar]
             coord_ls.append(np.asarray(ar))
         pts_in = np.array(coord_ls)
-        #
-        # if isinstance(X_in, float) or isinstance(X_in, int):
-        #     X_in = [X_in]
-        # if isinstance(Z_in, float) or isinstance(Z_in, int):
-        #     Z_in = [Z_in]
-        # X_in = np.asarray(X_in)
-        # Z_in = np.asarray(Z_in)
-        # # Array of points to interpolate, row 0 = X values, row 1 = Y values
-        # pts_in = np.array([X_in, Z_in])
 
         n = len(self.coefficients) # Number of terms in the final interpolant
 
-        self.phi_x = np.zeros((len(pts_in[0,:]), n)) # Basis terms
+        self.phi_x = np.zeros((pts_in.shape[1], n)) # Basis terms
 
         for i in range(len(pts_in[0, :])):
             for j in range(n):
