@@ -10,8 +10,8 @@ author: lmaio
 
 import os
 import sys
+
 import numpy as np
-from matplotlib import pyplot as plt
 
 # This must come before the next imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
@@ -85,7 +85,6 @@ class InterpolateRBF():
 
     def interpolate(self, input_coords):
         '''ONE VARIABLE ONLY'''
-        coord = []
 
 
         if isinstance(input_coords, (float, int)):
@@ -100,7 +99,7 @@ class InterpolateRBF():
 
         num_interpolant_terms = self.coefficients.shape[1] # Number of terms in the final interpolant
 
-        self.phi_x = np.zeros((num_coords_sets, num_coords, num_interpolant_terms)) # Basis terms #FIXME: Need 3d matrix, one phi per dataset
+        self.phi_x = np.zeros((num_coords_sets, num_coords, num_interpolant_terms)) # Basis terms
 
         # Transpose known_coords for proper matrix operation
         knwn_coords = self._known_coords.T
@@ -111,17 +110,12 @@ class InterpolateRBF():
         for s in range(num_coords_sets):
             for i in range(num_coords):
                 for j in range(num_interpolant_terms):
-                    # use map on array???
-
-                    # r = self._dist_r(coords_in[:, i], self._known_coords[:, j])
-                    c_in = coords_in[i, s]
-                    ref_pt = knwn_coords[j,0]
                     r = self._dist_r(coords_in[i, s], knwn_coords[j, 0])
                     self.phi_x[s, i, j] = self._phi(r)
 
         F = np.zeros((num_coords, num_coords_sets))
         for s in range(num_coords_sets):
-            F[:, s] = np.dot(self.phi_x[s, :, :], self.coefficients.T)[:,0]
+            F[:, s] = np.dot(self.phi_x[s, :, :], self.coefficients.T)[:, 0]
 
         return F
 
@@ -140,8 +134,6 @@ def select_station(station_id):
         end = -1
 
     return x[start:end], z[start:end], p[start:end]
-
-
 
 
 def main():

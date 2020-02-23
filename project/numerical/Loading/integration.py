@@ -12,7 +12,6 @@ import os
 import sys
 
 import numpy as np
-import numexpr as ne
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
@@ -38,7 +37,7 @@ def def_integral(fn, start, stop, num_bins=100):
     else:
         stop_ar = stop
     steps = np.linspace(start_ar, stop_ar, num_bins, axis=0) # Need to find integral of each column
-    width = steps[1,:] - steps[0,:] # Uniform bin width
+    width = steps[1, :] - steps[0, :] # Uniform bin width
 
     if steps.ndim > 2:
         steps = np.squeeze(steps)  # Remove extra dimensions with shape 1
@@ -50,7 +49,7 @@ def def_integral(fn, start, stop, num_bins=100):
     return areas_ar.sum(axis=0)
 
 
-def indef_integral_v2(fn, start, stop, num_var_integrals=1, **kwargs):
+def indef_integral(fn, start, stop, num_var_integrals=1, **kwargs):
     num_bins = kwargs.pop('num_bins', 100)
     if isinstance(start, (float, int)):
         start_ar = np.array([start])
@@ -62,55 +61,18 @@ def indef_integral_v2(fn, start, stop, num_var_integrals=1, **kwargs):
         stop_ar = stop
 
     steps = np.linspace(start_ar, stop_ar, num_bins) # Need to find integral of each column
-    width = steps[1,:] - steps[0,:] # Uniform bin width
+    width = steps[1, :] - steps[0, :] # Uniform bin width
 
     steps = np.squeeze(steps) # Remove extra dimensions with shape 1
 
     if num_var_integrals == 1:
         data = def_integral(fn, start, steps, num_bins=num_bins)
     else:
-        data = indef_integral_v2(fn, start, steps.T, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
+        data = indef_integral(fn, start, steps.T, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
 
     data_areas = np.multiply((data[:-1] + data[1:]) / 2, width)
     return data_areas.sum(axis=0)
 
-
-def indef_integral(fn, start, stop, num_var_integrals=1, **kwargs):
-    '''
-    Definite numerical integration of a 1 variable function
-    :param start: start coordinate
-    :param stop: end coordinate
-    :param num_bins: number of bins to use
-    :param fn: function of a single variable
-    :return:
-    '''
-    num_bins = kwargs.pop('num_bins', 100)
-
-    steps = np.linspace(start, stop, num_bins)
-    width = steps[1] - steps[0] # Uniform bin width
-
-    # data = np.array([steps, np.zeros_like(steps)]).T # Col 0 = coordinates, col 1 = integral values
-
-    # if num_var_integrals == 1:
-    #     data[:, 1] = def_integral(fn, start, data[:, 0], num_bins=num_bins)
-    # else:
-    #     data[:, 1] = indef_integral(fn, start, data[:, 0], num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
-    #
-    # data_areas = (data[:-1,1] + data[1:, 1]) / 2 * width
-    # return data_areas.sum(axis=0)
-
-    fi = []
-    for x in steps:
-        if x != start:
-            if num_var_integrals == 1:
-                fi.append(def_integral(fn, start, x, num_bins=num_bins))
-            else: # Nested for other integrals #TODO: Test this
-                fi.append(indef_integral(fn, start, x, num_var_integrals=num_var_integrals - 1, num_bins=num_bins))
-
-    fi = np.array(fi)
-
-    areas = (fi[:-1] + fi[1:]) / 2 * width
-    return areas.sum()
 
 def station_loads(**kwargs):
     num_bins = kwargs.pop('num_bins', 100)
@@ -143,8 +105,6 @@ def main():
 
     second_int = indef_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
     print(second_int)
-
-
 
 if __name__ == '__main__':
     main()

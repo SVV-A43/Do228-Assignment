@@ -18,7 +18,7 @@ from scipy.interpolate import Rbf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.interpolation import InterpolateRBF
-from project.numerical.Loading.integration import def_integral, indef_integral, indef_integral_v2
+from project.numerical.Loading.integration import def_integral, indef_integral
 
 
 class LoadingTests(unittest.TestCase):
@@ -35,7 +35,7 @@ class LoadingTests(unittest.TestCase):
         # Create instance of our interpolation class
         my_interpolant = InterpolateRBF(x, d)
 
-        # Create reference radial basis function
+        # Create reference radial basis functiond
         ref_interpolant = Rbf(x, d, function='linear')
 
         # Generate points to test
@@ -51,7 +51,7 @@ class LoadingTests(unittest.TestCase):
         del x, d, my_interpolant, ref_interpolant, xi, di, fi
 
 
-    # Our RBF interpolant is currently developed to handle multiple 1D datasets,
+    # Our RBF Interpolant is currently developed to handle ONLY multiple 1D datasets,
     #       rather than bi-variate data. This would be a potential future update
     #       This test is written for a previous version of the function where that did work
     @unittest.expectedFailure
@@ -82,19 +82,19 @@ class LoadingTests(unittest.TestCase):
         ### Test Setup
         # Create rbf interpolation function of random data points
         z, d = np.random.rand(2, 50)
-        rbfi = Rbf(z, d, function='linear')
+        interpolator = Rbf(z, d, function='linear')
 
         # Run reference integration
-        ref_integral = quad(rbfi, min(z), max(z))[0]
+        ref_integral = quad(interpolator, min(z), max(z))[0]
 
         # Our integral
-        num_integral = def_integral(rbfi, min(z), max(z), num_bins=100)
+        num_integral = def_integral(interpolator, min(z), max(z), num_bins=1000)
 
         error = self.calc_error(ref_integral, num_integral[0])
         assert error < 0.01 # Error must be less than 1 %
 
         ### Cleanup
-        del z, d, rbfi, ref_integral, num_integral, error
+        del z, d, interpolator, ref_integral, num_integral, error
 
     def test_poly_definite_integral(self):
         ### Test Setup
@@ -114,8 +114,10 @@ class LoadingTests(unittest.TestCase):
         error = self.calc_error(ref_integral, num_integral[0])
         error2 = self.calc_error(ref_sol, num_integral[0])
         assert error < 0.001  # Error must be less than 0.1 %
+        assert error2 < 0.001
 
         ### Cleanup
+        del start, end, ref_integral, ref_sol, num_integral, error, error2
 
 
 
@@ -161,36 +163,6 @@ class LoadingTests(unittest.TestCase):
         ref_sol_n_2 = 2
         ref_sol_n_3 = 0.8
 
-        num_sol_n_1 = indef_integral_v2(fn_test, start, end, num_var_integrals=1, num_bins=100)
-        num_sol_n_2 = indef_integral_v2(fn_test, start, end, num_var_integrals=2, num_bins=100)
-        num_sol_n_3 = indef_integral_v2(fn_test, start, end, num_var_integrals=3, num_bins=100)
-
-
-        error1 = self.calc_error(ref_sol_n_1, num_sol_n_1)
-        error2 = self.calc_error(ref_sol_n_2, num_sol_n_2)
-        error3 = self.calc_error(ref_sol_n_3, num_sol_n_3)
-
-        # Error must be less than 1 %
-        assert error1 < 0.01
-        assert error2 < 0.01
-        assert error3 < 0.01
-
-        # Cleanup
-        del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3,\
-            num_sol_n_1, num_sol_n_2, num_sol_n_3, error1, error2, error3
-
-    def test_n_indef_integrals_loops(self):
-        def fn_test(x):
-            return 3*x
-
-        start = 0
-        end = 2
-
-        # n=1 means once variable integral
-        ref_sol_n_1 = 4
-        ref_sol_n_2 = 2
-        ref_sol_n_3 = 0.8
-
         num_sol_n_1 = indef_integral(fn_test, start, end, num_var_integrals=1, num_bins=100)
         num_sol_n_2 = indef_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
         num_sol_n_3 = indef_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
@@ -208,5 +180,3 @@ class LoadingTests(unittest.TestCase):
         # Cleanup
         del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3,\
             num_sol_n_1, num_sol_n_2, num_sol_n_3, error1, error2, error3
-
-
