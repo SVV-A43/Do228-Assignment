@@ -18,14 +18,26 @@ def def_integral(fn, start, stop, num_bins=1000):
     :param fn: function of a single variable
     :return:
     '''
-    steps = np.linspace(start, stop, num_bins)
-    width = steps[1] - steps[0] # Uniform bin width
+    if isinstance(start, (float, int)):
+        start_ar = np.array([start])
+    else:
+        start_ar = start
+    if isinstance(stop, (float, int)):
+        stop_ar = np.array([stop])
+    else:
+        stop_ar = stop
+    steps = np.linspace(start_ar, stop_ar, num_bins, axis=0) # Need to find integral of each column
+    width = steps[1,:] - steps[0,:] # Uniform bin width
 
-    # Change this to general function
-    fi = fn(steps)
+    # Use fn to find values of each step
+    step_vals = []
+    for set in range(steps.shape[1]):
+        step_vals.append( fn(steps[:, set]))
 
-    areas = (fi[:-1] + fi[1:]) / 2 * width
-    return areas.sum()
+    step_vals = np.array(step_vals)
+
+    areas = (step_vals[:, -1] + step_vals[:, 1:]) / 2 * width
+    return areas.sum(axis=1)
 
 def indef_integral(fn, start, stop, **kwargs):
     '''
@@ -41,9 +53,14 @@ def indef_integral(fn, start, stop, **kwargs):
     steps = np.linspace(start, stop, num_bins)
     width = steps[1] - steps[0] # Uniform bin width
 
+    data = np.array([steps, np.zeros_like(steps)])
+    # data[1, :] = def_integral(fn, start, data[0, :], num_bins=100)
+
+
     fi = []
     for x in steps:
-        fi.append(def_integral(fn, start, x, num_bins=num_bins))
+        if x != start:
+            fi.append(def_integral(fn, start, x, num_bins=num_bins))
 
     fi = np.array(fi)
 

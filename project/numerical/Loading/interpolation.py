@@ -79,12 +79,13 @@ class InterpolateRBF():
             if isinstance(ar, (float, int)):
                 ar = [ar]
             coord_ls.append(np.asarray(ar))
-        pts_in = np.array(coord_ls)
+        pts_in = np.array(coord_ls) # Each set of pts_in is
 
         n = len(self.coefficients) # Number of terms in the final interpolant
 
         self.phi_x = np.zeros((pts_in.shape[1], n)) # Basis terms
 
+        # Calculate RBF matrix for each set of
         for i in range(len(pts_in[0, :])):
             for j in range(n):
                 r = self._dist_r(pts_in[:, i], self._known_coords[:, j])

@@ -54,7 +54,7 @@ class LoadingTests(unittest.TestCase):
         # Our integral
         num_integral = def_integral(rbfi, min(z), max(z))
 
-        error = self.calc_error(ref_integral, num_integral)
+        error = self.calc_error(ref_integral, num_integral[0])
         assert error < 0.001 # Error must be less than 0.1 %
 
         ### Cleanup
