@@ -1,15 +1,16 @@
-import numpy as np
-import sys
 import os
+import sys
+import numpy as np
+from matplotlib import pyplot as plt
 
-import matplotlib.pyplot as plt
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
+# This must come before the next imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class InterpolateRBF():
-    def __init__(self, *data_arrays, basis='linear', coeff_path=None, save_path=None):
+    def __init__(self, *data_arrays, basis='linear', coeff_path=None,
+                 save_path=None):
         '''
         :param X: 1D array of x-coordinates
         :param Z: 1D array of z-coordinates
@@ -18,6 +19,7 @@ class InterpolateRBF():
         '''
         self._basis = basis
         self.__save_path = save_path
+        self.phi_x = None
 
         # Save initial data
         coords = []
@@ -33,16 +35,12 @@ class InterpolateRBF():
             self.coefficients = np.genfromtxt(coeff_path)
 
 
-
-
-
     def _dist_r(self, p1, p2):
         '''
         :param x1: point 1 [x1, z1]
         :param x2: point 2 [x2, z2]
         :return:
         '''
-    
         return np.sqrt(((p2 - p1)**2).sum())
 
 
@@ -53,23 +51,24 @@ class InterpolateRBF():
         :param basis: 'linear'
         :return:
         '''
-        if self._basis=='linear':
+        if self._basis == 'linear':
             return r
-        else:
-            raise NotImplementedError
+
+        raise NotImplementedError
 
     def _compute_coeffs(self):
         # self._known_coords = np.array([np.asarray(X), np.asarray(Z)])
-        n = len(self._known_coords[0,:])
+        dim_n = len(self._known_coords[0, :])
 
-        A = np.zeros((n,n))
+        mat_A = np.zeros((dim_n, dim_n))
 
-        for i in range(n):
-            for j in range(n):
-                r = self._dist_r(self._known_coords[:, i], self._known_coords[:, j])
-                A[i][j] = self._phi(r)
+        for i in range(dim_n):
+            for j in range(dim_n):
+                r = self._dist_r(self._known_coords[:, i],
+                                 self._known_coords[:, j])
+                mat_A[i][j] = self._phi(r)
 
-        self.coefficients = np.linalg.solve(A, self._known_data)
+        self.coefficients = np.linalg.solve(mat_A, self._known_data)
         if self.__save_path:
             np.savetxt(self.__save_path, self.coefficients, delimiter=',')
 
@@ -77,7 +76,7 @@ class InterpolateRBF():
     def interpolate(self, *coord_arrays):
         coord_ls = []
         for ar in coord_arrays:
-            if isinstance(ar, int) or isinstance(ar, float):
+            if isinstance(ar, (float, int)):
                 ar = [ar]
             coord_ls.append(np.asarray(ar))
         pts_in = np.array(coord_ls)
@@ -89,19 +88,23 @@ class InterpolateRBF():
         for i in range(len(pts_in[0, :])):
             for j in range(n):
                 r = self._dist_r(pts_in[:, i], self._known_coords[:, j])
-                self.phi_x[i,j] = self._phi(r)
+                self.phi_x[i, j] = self._phi(r)
 
         F = np.dot(self.phi_x, self.coefficients)
 
         return F
 
 
-def select_station(id):
+def select_station(station_id):
+    '''
+    :param station_id: station number
+    :return:
+    '''
     aileron = AileronGeometry()
     x, z, p = aileron.data_x_z_p()
 
-    start = id*81
-    end = (id+1)*81
+    start = station_id * 81
+    end = (station_id + 1) * 81
     if end > p.shape[0]:
         end = -1
 
@@ -109,51 +112,51 @@ def select_station(id):
 
 
 
-if __name__ == '__main__':
-    from scipy.interpolate import Rbf
 
-    aileron = AileronGeometry()
-    # x, z, p = aileron.data_x_z_p()
+def main():
+    # x_coords, z_coords, p_vals = aileron.data_x_z_p()
 
     # Use single station
-    x, z, p = select_station(6)
-
-
-
+    x_coords, z_coords, p_vals = select_station(6)
 
     # Create instance of our interpolation class
-    my_i = InterpolateRBF(x, z, p) #, coeff_path='rbf_coefficients_linear.csv'
+    my_i = InterpolateRBF(x_coords, z_coords, p_vals)  # , coeff_path='rbf_coefficients_linear.csv'
 
     # Create reference radial basis function
-    # rbfi = Rbf(x, z, p, function='linear')
+    # rbfi = Rbf(x_coords, z_coords, p_vals, function='linear')
 
     # Generate points to test
-    zi = np.linspace(0.001, -0.5, len(z))
-    xi = np.array([x[0] for i in range(len(x))])
+    z_i = np.linspace(0.001, -0.5, len(z_coords))
+    x_i = np.array([x_coords[0] for i in range(len(x_coords))])
     # xi = [1.5]
     # zi = [-0.1]
 
     # di = rbfi(xi, zi)  # interpolated values
     # print(di)
 
-    fi = my_i.interpolate(xi, zi)
-    print(fi)
+    f_i = my_i.interpolate(x_i, z_i)
+    print(f_i)
 
     # print(f'Check for equal: {(fi==di).all()}')
     #
-    plt.scatter(z, p, c='green')
+    plt.scatter(z_coords, p_vals, c='green')
     # plt.plot(zi, di, c='red')
-    plt.plot(zi, fi, c='blue')
+    plt.plot(z_i, f_i, c='blue')
     plt.show()
     # fig = plt.figure()
     # ax = plt.axes(projection='3d')
-    # ax.scatter3D(x, z, p, c=p, cmap='Greens')
+    # ax.scatter3D(x_coords, z_coords, p_vals, c=p_vals, cmap='Greens')
     # ax.plot3D(xi, zi, di, 'red')
     # ax.plot3D(xi, zi, fi, 'blue')
-    # # ax.plot_trisurf(x, z, P_arr, cmap='viridis', edgecolor='none')
-    # ax.set_xlabel('Spanwise coordinate x [m]')
-    # ax.set_ylabel('Chordwise coordinate z [m] ')
-    # ax.set_zlabel('Aerodynamic Load p [kN/m^2]')
+    # # ax.plot_trisurf(x_coords, z_coords, P_arr, cmap='viridis', edgecolor='none')
+    # ax.set_xlabel('Spanwise coordinate x_coords [m]')
+    # ax.set_ylabel('Chordwise coordinate z_coords [m] ')
+    # ax.set_zlabel('Aerodynamic Load p_vals [kN/m^2]')
     # ax.view_init(10, 45)
     # ax.set_title('Aerodynamic loading')
     # plt.show()
+
+
+if __name__ == '__main__':
+
+    main()

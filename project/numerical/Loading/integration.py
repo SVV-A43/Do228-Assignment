@@ -1,13 +1,12 @@
-import numpy as np
 import os
-import warnings
 import sys
+
+import numpy as np
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
 from project.numerical.Loading.aileron_geometry import AileronGeometry
-from project.numerical.Loading.interpolation import InterpolateRBF, select_station
-
+from project.numerical.Loading.interpolation import InterpolateRBF
 
 
 def def_integral(fn, start, stop, num_bins=1000):
@@ -28,7 +27,7 @@ def def_integral(fn, start, stop, num_bins=1000):
     areas = (fi[:-1] + fi[1:]) / 2 * width
     return areas.sum()
 
-def indef_integral(fn, start, stop, num_bins=1000):
+def indef_integral(fn, start, stop, **kwargs):
     '''
     Definite numerical integration of a 1 variable function
     :param start: start coordinate
@@ -37,6 +36,8 @@ def indef_integral(fn, start, stop, num_bins=1000):
     :param fn: function of a single variable
     :return:
     '''
+    num_bins = kwargs.pop('num_bins', 1000)
+
     steps = np.linspace(start, stop, num_bins)
     width = steps[1] - steps[0] # Uniform bin width
 
@@ -65,47 +66,28 @@ def station_loads(**kwargs):
 
     return x_coord, q_x
 
-def check_fn_simplification():
-    warnings.warn('Using LOW BIN RESOLUTION for def_integration, update for final model')
-    x_coords, q = station_loads(num_bins=10)
-
-    int_fn = InterpolateRBF(x_coords, q)
-
-    a = int_fn.coefficients
-
-    def lin_fn(x):
-        f = (x*a).sum() - np.dot(x_coords, a.T)
-        return f
-
-    pt = 0.5
-    fi = lin_fn(pt)
-    qi = int_fn.interpolate(pt)
 
 
-    print( qi == fi)
-
-
-
-
-if __name__ == '__main__':
-
-
-
+def main():
     ail = AileronGeometry()
     # min_z = min(ail.station_z_coords())
     # max_z = max(ail.station_z_coords())
     #
     station_id = 5
-    x, z, p = ail.station_data(station_id)
+    _, z, p = ail.station_data(station_id)
     # xi = [0 for i in range(len(x))]
 
     int_fn = InterpolateRBF(z, p)
 
     second_int = indef_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
+    print(second_int)
 
     #
     #
     # area = def_integral(min_z, max_z, 100, x_coord=x[0], fn=interpolant, fn2=rbfi)
 
     # station_loads(100)
-    check_fn_simplification()
+
+
+if __name__ == '__main__':
+    main()
