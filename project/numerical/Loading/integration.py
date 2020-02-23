@@ -1,7 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+title: reaction_forces
+project: Do228-Assignment
+date: 2/20/2020
+author: lmaio
+"""
+
 import os
 import sys
 
 import numpy as np
+import numexpr as ne
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
@@ -9,7 +20,7 @@ from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.interpolation import InterpolateRBF
 
 
-def def_integral(fn, start, stop, num_bins=1000):
+def def_integral(fn, start, stop, num_bins=100):
     '''
     Definite numerical integration of a 1 variable function
     :param start: start coordinate
@@ -29,17 +40,42 @@ def def_integral(fn, start, stop, num_bins=1000):
     steps = np.linspace(start_ar, stop_ar, num_bins, axis=0) # Need to find integral of each column
     width = steps[1,:] - steps[0,:] # Uniform bin width
 
-    # Use fn to find values of each step
-    step_vals = []
-    for set in range(steps.shape[1]):
-        step_vals.append( fn(steps[:, set]))
+    if steps.ndim > 2:
+        steps = np.squeeze(steps)  # Remove extra dimensions with shape 1
 
-    step_vals = np.array(step_vals)
+    # Interpolating function needs to output a column of values, for each input column of coordinates (from steps)
+    step_vals_ar = fn(steps)
 
-    areas = (step_vals[:, :-1] + step_vals[:, 1:]) / 2 * width
-    return areas.sum(axis=1)
+    areas_ar = np.multiply((step_vals_ar[:-1, :] + step_vals_ar[1:, :]) / 2, width)
+    return areas_ar.sum(axis=0)
 
-def indef_integral(fn, start, stop, **kwargs):
+
+def indef_integral_v2(fn, start, stop, num_var_integrals=1, **kwargs):
+    num_bins = kwargs.pop('num_bins', 100)
+    if isinstance(start, (float, int)):
+        start_ar = np.array([start])
+    else:
+        start_ar = start
+    if isinstance(stop, (float, int)):
+        stop_ar = np.array([stop])
+    else:
+        stop_ar = stop
+
+    steps = np.linspace(start_ar, stop_ar, num_bins) # Need to find integral of each column
+    width = steps[1,:] - steps[0,:] # Uniform bin width
+
+    steps = np.squeeze(steps) # Remove extra dimensions with shape 1
+
+    if num_var_integrals == 1:
+        data = def_integral(fn, start, steps, num_bins=num_bins)
+    else:
+        data = indef_integral_v2(fn, start, steps.T, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
+
+    data_areas = np.multiply((data[:-1] + data[1:]) / 2, width)
+    return data_areas.sum(axis=0)
+
+
+def indef_integral(fn, start, stop, num_var_integrals=1, **kwargs):
     '''
     Definite numerical integration of a 1 variable function
     :param start: start coordinate
@@ -48,19 +84,28 @@ def indef_integral(fn, start, stop, **kwargs):
     :param fn: function of a single variable
     :return:
     '''
-    num_bins = kwargs.pop('num_bins', 1000)
+    num_bins = kwargs.pop('num_bins', 100)
 
     steps = np.linspace(start, stop, num_bins)
     width = steps[1] - steps[0] # Uniform bin width
 
-    data = np.array([steps, np.zeros_like(steps)])
-    # data[1, :] = def_integral(fn, start, data[0, :], num_bins=100)
+    # data = np.array([steps, np.zeros_like(steps)]).T # Col 0 = coordinates, col 1 = integral values
 
+    # if num_var_integrals == 1:
+    #     data[:, 1] = def_integral(fn, start, data[:, 0], num_bins=num_bins)
+    # else:
+    #     data[:, 1] = indef_integral(fn, start, data[:, 0], num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
+    #
+    # data_areas = (data[:-1,1] + data[1:, 1]) / 2 * width
+    # return data_areas.sum(axis=0)
 
     fi = []
     for x in steps:
         if x != start:
-            fi.append(def_integral(fn, start, x, num_bins=num_bins))
+            if num_var_integrals == 1:
+                fi.append(def_integral(fn, start, x, num_bins=num_bins))
+            else: # Nested for other integrals #TODO: Test this
+                fi.append(indef_integral(fn, start, x, num_var_integrals=num_var_integrals - 1, num_bins=num_bins))
 
     fi = np.array(fi)
 
@@ -68,7 +113,7 @@ def indef_integral(fn, start, stop, **kwargs):
     return areas.sum()
 
 def station_loads(**kwargs):
-    num_bins = kwargs.pop('num_bins', 1000)
+    num_bins = kwargs.pop('num_bins', 100)
     q_x = []
     x_coord = []
     ail = AileronGeometry()
@@ -99,11 +144,6 @@ def main():
     second_int = indef_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
     print(second_int)
 
-    #
-    #
-    # area = def_integral(min_z, max_z, 100, x_coord=x[0], fn=interpolant, fn2=rbfi)
-
-    # station_loads(100)
 
 
 if __name__ == '__main__':

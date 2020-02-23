@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+title: reaction_forces
+project: Do228-Assignment
+date: 2/17/2020
+author: lmaio
+"""
+
+
 # Imports
 import numpy as np
 

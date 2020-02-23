@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+title: reaction_forces
+project: Do228-Assignment
+date: 2/20/2020
+author: lmaio
+"""
+
 import os
 import sys
 import numpy as np
@@ -68,30 +78,50 @@ class InterpolateRBF():
                                  self._known_coords[:, j])
                 mat_A[i][j] = self._phi(r)
 
-        self.coefficients = np.linalg.solve(mat_A, self._known_data)
+        self.coefficients = np.array([np.linalg.solve(mat_A, self._known_data)])
         if self.__save_path:
             np.savetxt(self.__save_path, self.coefficients, delimiter=',')
 
 
-    def interpolate(self, *coord_arrays):
-        coord_ls = []
-        for ar in coord_arrays:
-            if isinstance(ar, (float, int)):
-                ar = [ar]
-            coord_ls.append(np.asarray(ar))
-        pts_in = np.array(coord_ls) # Each set of pts_in is
+    def interpolate(self, input_coords):
+        '''ONE VARIABLE ONLY'''
+        coord = []
 
-        n = len(self.coefficients) # Number of terms in the final interpolant
 
-        self.phi_x = np.zeros((pts_in.shape[1], n)) # Basis terms
+        if isinstance(input_coords, (float, int)):
+            input_coords = [input_coords]
+        coords_in = np.asarray(input_coords) # Each set of pts_in is
+
+        if coords_in.ndim == 1:
+            coords_in = np.array([coords_in]).T
+
+        num_coords_sets = coords_in.shape[1]
+        num_coords = coords_in.shape[0]
+
+        num_interpolant_terms = self.coefficients.shape[1] # Number of terms in the final interpolant
+
+        self.phi_x = np.zeros((num_coords_sets, num_coords, num_interpolant_terms)) # Basis terms #FIXME: Need 3d matrix, one phi per dataset
+
+        # Transpose known_coords for proper matrix operation
+        knwn_coords = self._known_coords.T
 
         # Calculate RBF matrix for each set of
-        for i in range(len(pts_in[0, :])):
-            for j in range(n):
-                r = self._dist_r(pts_in[:, i], self._known_coords[:, j])
-                self.phi_x[i, j] = self._phi(r)
+        # ONE VARIABLE INTERPOLATOR ONLY
 
-        F = np.dot(self.phi_x, self.coefficients)
+        for s in range(num_coords_sets):
+            for i in range(num_coords):
+                for j in range(num_interpolant_terms):
+                    # use map on array???
+
+                    # r = self._dist_r(coords_in[:, i], self._known_coords[:, j])
+                    c_in = coords_in[i, s]
+                    ref_pt = knwn_coords[j,0]
+                    r = self._dist_r(coords_in[i, s], knwn_coords[j, 0])
+                    self.phi_x[s, i, j] = self._phi(r)
+
+        F = np.zeros((num_coords, num_coords_sets))
+        for s in range(num_coords_sets):
+            F[:, s] = np.dot(self.phi_x[s, :, :], self.coefficients.T)[:,0]
 
         return F
 
@@ -115,47 +145,12 @@ def select_station(station_id):
 
 
 def main():
-    # x_coords, z_coords, p_vals = aileron.data_x_z_p()
+    x, d = np.random.rand(2, 50)
+    my_inter = InterpolateRBF(x, d)
 
-    # Use single station
-    x_coords, z_coords, p_vals = select_station(6)
-
-    # Create instance of our interpolation class
-    my_i = InterpolateRBF(x_coords, z_coords, p_vals)  # , coeff_path='rbf_coefficients_linear.csv'
-
-    # Create reference radial basis function
-    # rbfi = Rbf(x_coords, z_coords, p_vals, function='linear')
-
-    # Generate points to test
-    z_i = np.linspace(0.001, -0.5, len(z_coords))
-    x_i = np.array([x_coords[0] for i in range(len(x_coords))])
-    # xi = [1.5]
-    # zi = [-0.1]
-
-    # di = rbfi(xi, zi)  # interpolated values
-    # print(di)
-
-    f_i = my_i.interpolate(x_i, z_i)
-    print(f_i)
-
-    # print(f'Check for equal: {(fi==di).all()}')
-    #
-    plt.scatter(z_coords, p_vals, c='green')
-    # plt.plot(zi, di, c='red')
-    plt.plot(z_i, f_i, c='blue')
-    plt.show()
-    # fig = plt.figure()
-    # ax = plt.axes(projection='3d')
-    # ax.scatter3D(x_coords, z_coords, p_vals, c=p_vals, cmap='Greens')
-    # ax.plot3D(xi, zi, di, 'red')
-    # ax.plot3D(xi, zi, fi, 'blue')
-    # # ax.plot_trisurf(x_coords, z_coords, P_arr, cmap='viridis', edgecolor='none')
-    # ax.set_xlabel('Spanwise coordinate x_coords [m]')
-    # ax.set_ylabel('Chordwise coordinate z_coords [m] ')
-    # ax.set_zlabel('Aerodynamic Load p_vals [kN/m^2]')
-    # ax.view_init(10, 45)
-    # ax.set_title('Aerodynamic loading')
-    # plt.show()
+    xi = 0.5
+    di = my_inter.interpolate(xi)
+    print(di)
 
 
 if __name__ == '__main__':
