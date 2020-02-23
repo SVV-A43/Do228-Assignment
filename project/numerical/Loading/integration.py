@@ -36,7 +36,7 @@ def def_integral(fn, start, stop, num_bins=1000):
 
     step_vals = np.array(step_vals)
 
-    areas = (step_vals[:, -1] + step_vals[:, 1:]) / 2 * width
+    areas = (step_vals[:, :-1] + step_vals[:, 1:]) / 2 * width
     return areas.sum(axis=1)
 
 def indef_integral(fn, start, stop, **kwargs):
