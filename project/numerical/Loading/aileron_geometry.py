@@ -19,26 +19,46 @@ from definitions import AERO_LOADING_DATA
 
 class AileronGeometry():
     def __init__(self, filename=AERO_LOADING_DATA):
-        self.__Ca = 0.515
-        self.__la = 2.961
+        self.C_a  = 0.515       # [m]
+        self.l_a  = 2.961       # [m]
+        self.x1   = 0.174       # [m]
+        self.x2   = 1.051       # [m]
+        self.x3   = 2.512       # [m]
+        self.x_a  = 30.0 / 100  # [m]
+        self.h    = 24.8 / 100  # [m]
+        self.d_1  = 1.034 / 100 # [m]
+        self.d_2  = 2.066 / 100 # [m]
+        self.theta = np.deg2rad(25)         # [rad]
+
+        self.t_sk = 1.1         # [mm]
+        self.t_sp = 2.2         # [mm]
+        self.t_st = 1.2         # [mm]
+        self.h_st = 1.5 * 10    # [mm]
+        self.w_st = 3.0 * 10    # [mm]
+        self.n_st = 11          # [-]
+        self.I_xx = None
+        self.I_yy = None
+        self.I_zz = None
+        self.z_sc = None        # [m] z_tilde in equilibrium equations
+
 
         self.__pressure = np.genfromtxt(filename, delimiter=',')
-        self.span_stations = len(self.__pressure[0, :])
-        self.chord_stations = len(self.__pressure[:, 0])
+        self.num_span_stations = len(self.__pressure[0, :])
+        self.num_chord_stations = len(self.__pressure[:, 0])
 
         self.__x_coords = []
         self.__z_coords = []
 
 
         # Calculate x-point_coords of stations along span
-        for i in range(self.span_stations):
+        for i in range(self.num_span_stations):
             self.__x_coords.append(self.__xi(i+1))
 
         # Calculate z-point coords of station along chord
-        for j in range(self.chord_stations):
+        for j in range(self.num_chord_stations):
             self.__z_coords.append(self.__zi(j+1))
 
-        num_data_pts = self.span_stations * self.chord_stations
+        num_data_pts = self.num_span_stations * self.num_chord_stations
         self.load_data = np.zeros((num_data_pts, 3))
 
         n = 0
@@ -52,24 +72,24 @@ class AileronGeometry():
 
         # Create Array of the (z,x coordinates where the load data is found) LOCAL COORD SYSTEM AS DEFINED IN READER fig3
         # The order [z, x] here is to match that of the loading data, which is also z-coord per row
-        self.__load_coords = np.empty((self.chord_stations, self.span_stations), dtype=object)
-        for z in range(self.chord_stations):
-            for x in range(self.span_stations):
+        self.__load_coords = np.empty((self.num_chord_stations, self.num_span_stations), dtype=object)
+        for z in range(self.num_chord_stations):
+            for x in range(self.num_span_stations):
                 self.__load_coords[z, x] = (self.__z_coords[z], self.__x_coords[x])
 
     # Functions to calculate geometry
     def __th_xi(self, i):
-        return (i - 1) / self.span_stations * np.pi
+        return (i - 1) / self.num_span_stations * np.pi
 
     def __xi(self, i):
-        return .5 * (self.__la / 2 * (1 - np.cos(self.__th_xi(i))) + self.__la / 2 * (
+        return .5 * (self.l_a / 2 * (1 - np.cos(self.__th_xi(i))) + self.l_a / 2 * (
                     1 - np.cos(self.__th_xi(i + 1))))
 
     def __th_zi(self, i):
-        return (i - 1) / self.chord_stations * np.pi
+        return (i - 1) / self.num_chord_stations * np.pi
 
     def __zi(self, i):
-        return -.5 * (self.__Ca / 2 * (1 - np.cos(self.__th_zi(i))) + self.__Ca / 2 * (
+        return -.5 * (self.C_a / 2 * (1 - np.cos(self.__th_zi(i))) + self.C_a / 2 * (
                     1 - np.cos(self.__th_zi(i + 1))))
 
     # Methods to use:

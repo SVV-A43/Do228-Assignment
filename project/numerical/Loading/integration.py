@@ -78,22 +78,6 @@ def variable_integral(fn, start, stop, num_var_integrals=1, **kwargs):
     return data_areas.sum(axis=0)
 
 
-def station_loads(**kwargs):
-    num_bins = kwargs.pop('num_bins', 1000)
-    q_x = []
-    x_coord = []
-    ail = AileronGeometry()
-    for station in tqdm(range(ail.span_stations)):
-        x, z, p = ail.station_data(station)
-        int_fn = InterpolateRBF(z, p)
-        station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
-        q_x.append(station_load)
-        x_coord.append(x[0])
-    q_x = np.array(q_x)
-    x_coord = np.array(x_coord)
-
-    return x_coord, q_x
-
 
 
 def main():
