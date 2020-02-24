@@ -107,6 +107,8 @@ class InterpolateRBF():
         # Calculate RBF matrix for each set of
         # ONE VARIABLE INTERPOLATOR ONLY
 
+        # FIXME: Needs to be vectorized, so input of 4d array returns 4d values
+
         for s in range(num_coords_sets):
             for i in range(num_coords):
                 for j in range(num_interpolant_terms):
@@ -115,7 +117,7 @@ class InterpolateRBF():
 
         F = np.zeros((num_coords, num_coords_sets))
         for s in range(num_coords_sets):
-            F[:, s] = np.dot(self.phi_x[s, :, :], self.coefficients.T)[:, 0]
+            F[:, s] = np.squeeze(np.dot(self.phi_x[s, :, :], self.coefficients.T)[:, 0])
 
         return F
 

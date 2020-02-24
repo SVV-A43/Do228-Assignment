@@ -19,6 +19,8 @@ from scipy.interpolate import Rbf
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.interpolation import InterpolateRBF
 from project.numerical.Loading.integration import def_integral, variable_integral
+from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants
+from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class LoadingTests(unittest.TestCase):
@@ -167,7 +169,7 @@ class LoadingTests(unittest.TestCase):
 
         num_sol_n_1 = variable_integral(fn_test, start, end, num_var_integrals=1, num_bins=100)
         num_sol_n_2 = variable_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
-        num_sol_n_3 = variable_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
+        num_sol_n_3 = variable_integral(fn_test, start, end, num_var_integrals=3, num_bins=40)
         # Lower resolution due to memory restrictions (LONG RUNTIME > 1min):
         #num_sol_n_4 = indef_integral(fn_test, start, end, num_var_integrals=4, num_bins=50)
 
@@ -186,3 +188,34 @@ class LoadingTests(unittest.TestCase):
         # Cleanup
         del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3, ref_sol_n_4, \
             num_sol_n_1, num_sol_n_2, num_sol_n_3, error2, error3
+
+    def test_equilibrium_coefficients(self):
+        A = equilibrium_eq_coefficients()
+
+        ref_A_0_1 = -1.64
+        ref_A_10_1 = -4.99966 * 10**-7
+
+        A_0_1 = A[0, 1]
+        A_10_1 = A[10, 1]
+
+        error1 = self.calc_error(ref_A_0_1, A_0_1)
+        error2 = self.calc_error(ref_A_10_1, A_10_1)
+
+        assert error1 < 0.01
+        assert error2 < 0.01
+
+    def test_equilibrium_resultants(self):
+        G = AileronGeometry
+        b = equilibrium_eq_resultants()
+
+        ref_b_4 = -18669
+        ref_b_8 = 0.00235
+
+        b_4 = b[4, 0]
+        b_8 = b[8, 0]
+
+        error1 = self.calc_error(ref_b_4, b_4)
+        error2 = self.calc_error(ref_b_8, b_8)
+
+        assert error1 < 0.01
+        assert error2 < 0.01

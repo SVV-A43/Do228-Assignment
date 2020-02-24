@@ -38,16 +38,17 @@ def def_integral(fn, start, stop, num_bins=100):
         stop_ar = stop
     del start, stop
 
-    steps = np.linspace(start_ar, stop_ar, num_bins, axis=0) # Need to find integral of each column
-    width = steps[1, :] - steps[0, :] # Uniform bin width
+    steps, step_width = np.linspace(start_ar, stop_ar, num_bins, axis=0, retstep=True) # Need to find integral of each column
 
     if steps.ndim > 2:
         steps = np.squeeze(steps)  # Remove extra dimensions with shape 1
 
+    width = steps[1, :] - steps[0, :]  # Uniform bin width
+
     # Interpolating function needs to output a column of values, for each input column of coordinates (from steps)
     step_vals_ar = fn(steps)
 
-    areas_ar = np.multiply((step_vals_ar[:-1, :] + step_vals_ar[1:, :]) / 2, width)
+    areas_ar = np.multiply((step_vals_ar[:-1, :] + step_vals_ar[1:, :]) / 2, step_width)
     return areas_ar.sum(axis=0)
 
 
