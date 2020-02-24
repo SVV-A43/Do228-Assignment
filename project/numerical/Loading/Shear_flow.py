@@ -92,7 +92,7 @@ Change segments by keeping track of perimeter, if perimeter exceeds the length a
 """
 
 
-func_list = [[qb_1_1,qb_1_2],[], [], []]
+func_list = [[qb_1_1,qb_1_2],[qb_3_1,qb_3_2],[qb_4_1,qb_4_2],[qb_6_1,qb_6_2]]
 qb_val_list = [qb_2_val]
 #moment arm from traling edge [vertical distance, horizontal distance] 1,3,4,6
 #for 2 and 5 = [0,eta],[0,eta]
