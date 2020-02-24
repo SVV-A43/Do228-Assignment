@@ -23,7 +23,7 @@ l_sk = m.hypot(C-h/2,h/2)
 def qb_2_1(s):
     return -s*Vy*t_skin/I_zz
 def qb_2_2(s):
-    return s
+    return -Vz*t*s/I_yy
 
 def_integral(fn_test1, start, end, num_bins=100)
 
@@ -36,31 +36,41 @@ print(qb_2)
 print(qb_2_val,qb_2_var)
 
 # Shear flow 1,3,4,6
-def qb_2_1(s):
-    return s
-def qb_2_2(s):
-    return s
+def qb_1_1(s):
+    return -Vy*t*(h/2)*m.sin(s)*(h/2)/I_zz
+def qb_1_2(s):
+    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
 
-def qb_2_1(s):
-    return s
-def qb_2_2(s):
-    return s
+def qb_3_1(s):
+    return -Vy*t_skin*((h/2)-h*s/2*l_sk)/I_zz
+def qb_3_2(s):
+    return -Vz*t*(eta-s)/I_yy
 
-def qb_2_1(s):
-    return s
-def qb_2_2(s):
-    return s
+def qb_4_1(s):
+    return -Vy*t_skin*-(h*s/2*l_sk)/I_zz
+def qb_4_2(s):
+    return -Vz*t*(eta-s)/I_yy
 
-def qb_2_1(s):
-    return s
-def qb_2_2(s):
-    return s
+def qb_6_1(s):
+    return -Vy*t*(h/2)*-m.sin(s)*(h/2)/I_zz
+def qb_6_2(s):
+    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
+
+def_integral(fn_test1, , end, num_bins=100)
+
+qb_2_Vy = value_integrate(0,h/2,[[-Vy*t_skin/I_zz],[1]])
+qb_2_Vz = value_integrate(0,h/2,[[-Vz*t_skin*eta/I_zz],[0]])
+qb_2 = Func(qb_2_Vy[0],qb_2_Vy[1]).__add__(qb_2_Vz)
+qb_2_val = qb_2.get_const()
+qb_2_var = qb_2.get_var()
+print(qb_2)
+print(qb_2_val,qb_2_var)
 
 # shear flow at 5
-def qb_2_1(s):
-    return s
-def qb_2_2(s):
-    return s
+def qb_5_1(s):
+    return -Vy*t*s/I_zz
+def qb_5_2(s):
+    return -Vz*t*s/I_yy
 
 
 # # lists are ordered as 1,3,4,6,5, which the numbers are given in cross section from verification model
