@@ -13,6 +13,7 @@ h_st = 0.015
 t_st = 0.0012
 t_skin = 0.0011
 t_spar = 0.0022
+A_stiff = w_st*t_st + h_st*t_st
 
 I_zz = 1.4221372629975417e-5
 I_yy = 5.643650631210155e-5
@@ -47,9 +48,9 @@ qb_2_val = def_integral(qb_2_1, 0, 1, num_bins=100) + def_integral(qb_2_2, 0, 1,
 
 # Shear flow 1,3,4,6
 def qb_1_1(s):
-    return -Vy*t_skin*(h/2)*m.sin(s)*(h/2)/I_zz
+    return -Vy*t_skin*(h/2)*np.sin(s)*(h/2)/I_zz
 def qb_1_2(s):
-    return -Vz*t_skin*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
+    return -Vz*t_skin*(eta+(h/2)*(1-np.cos(s)))*(h/2)/I_yy
 
 def qb_3_1(s):
     return -Vy*t_skin*((h/2)-h*s/2*l_sk)/I_zz
@@ -68,7 +69,7 @@ def qb_6_2(s):
 
 dx = 0.0001
 x = np.arange(0, C+dx,dx)
-x = np.append(x, x[::-1])
+x = np.append(x, x[-2::-1])
 sz = np.size(x)
 y = np.zeros(sz)
 stiff_loc = np.array([[ 0.        ,  0.        ],
@@ -121,6 +122,8 @@ for i in range(sz):  # go through the outer section
 
     current_loc = np.array(x[i], y[i])
     if current_loc in stiff_loc:
+        qb_current += A_stiff*y[i] + A_stiff * x[i]
+        print("stiffener added at", current_loc)
 
 
     qb_val_list.append(qb_current)
