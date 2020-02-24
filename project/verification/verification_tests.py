@@ -18,7 +18,7 @@ from scipy.interpolate import Rbf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.interpolation import InterpolateRBF
-from project.numerical.Loading.integration import def_integral, indef_integral
+from project.numerical.Loading.integration import def_integral, variable_integral
 
 
 class LoadingTests(unittest.TestCase):
@@ -136,8 +136,8 @@ class LoadingTests(unittest.TestCase):
         manual_solution1 = 4
         manual_solution2 = 7.3333333333333333
 
-        num_doub_int1 = indef_integral(fn_test1, start, end, num_bins=1000)
-        num_doub_int2 = indef_integral(fn_test2, start, end, num_bins=1000)
+        num_doub_int1 = variable_integral(fn_test1, start, end, num_bins=1000)
+        num_doub_int2 = variable_integral(fn_test2, start, end, num_bins=1000)
 
         error1 = self.calc_error(manual_solution1, num_doub_int1)
         error2 = self.calc_error(manual_solution2, num_doub_int2)
@@ -151,7 +151,7 @@ class LoadingTests(unittest.TestCase):
             error1, error2
 
 
-    def test_n_indef_integrals(self):
+    def test_n_variable_integrals(self):
         def fn_test(x):
             return 3*x
 
@@ -159,24 +159,30 @@ class LoadingTests(unittest.TestCase):
         end = 2
 
         # n=1 means once variable integral
-        ref_sol_n_1 = 4
-        ref_sol_n_2 = 2
-        ref_sol_n_3 = 0.8
+        # def integral:     # 3/2 * x**2
+        ref_sol_n_1 = 4     # 1/2 * x**3
+        ref_sol_n_2 = 2     # 1/8 * x**4
+        ref_sol_n_3 = 0.8   # 1/40 * x**5
+        ref_sol_n_4 = 0.2666666      # 1/240 * x**6
 
-        num_sol_n_1 = indef_integral(fn_test, start, end, num_var_integrals=1, num_bins=100)
-        num_sol_n_2 = indef_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
-        num_sol_n_3 = indef_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
+        num_sol_n_1 = variable_integral(fn_test, start, end, num_var_integrals=1, num_bins=100)
+        num_sol_n_2 = variable_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
+        num_sol_n_3 = variable_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
+        # Lower resolution due to memory restrictions (LONG RUNTIME > 1min):
+        #num_sol_n_4 = indef_integral(fn_test, start, end, num_var_integrals=4, num_bins=50)
 
 
         error1 = self.calc_error(ref_sol_n_1, num_sol_n_1)
         error2 = self.calc_error(ref_sol_n_2, num_sol_n_2)
         error3 = self.calc_error(ref_sol_n_3, num_sol_n_3)
+        #error4 = self.calc_error(ref_sol_n_4, num_sol_n_4)
 
         # Error must be less than 1 %
         assert error1 < 0.01
         assert error2 < 0.01
         assert error3 < 0.01
+        #assert error4 < 0.01
 
         # Cleanup
-        del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3,\
-            num_sol_n_1, num_sol_n_2, num_sol_n_3, error1, error2, error3
+        del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3, ref_sol_n_4, \
+            num_sol_n_1, num_sol_n_2, num_sol_n_3, error2, error3

@@ -11,30 +11,14 @@ author: lmaio
 
 # Imports
 import numpy as np
+from definitions import AERO_LOADING_DATA
 
 
 # CODE...
 
 
 class AileronGeometry():
-    # Functions to calculate geometry
-    def __th_xi(self, i):
-        return (i - 1) / self.span_stations * np.pi
-
-    def __xi(self, i):
-        return .5 * (self.__la / 2 * (1 - np.cos(self.__th_xi(i))) + self.__la / 2 * (1 - np.cos(self.__th_xi(i + 1))))
-
-    def __th_zi(self, i):
-        return (i - 1) / self.chord_stations * np.pi
-
-    def __zi(self, i):
-        return -.5 * (self.__Ca / 2 * (1 - np.cos(self.__th_zi(i))) + self.__Ca / 2 * (1 - np.cos(self.__th_zi(i + 1))))
-
-
-
-
-
-    def __init__(self, filename='./aero_loading_data/aerodynamicloaddo228.dat'):
+    def __init__(self, filename=AERO_LOADING_DATA):
         self.__Ca = 0.515
         self.__la = 2.961
 
@@ -73,6 +57,22 @@ class AileronGeometry():
             for x in range(self.span_stations):
                 self.__load_coords[z, x] = (self.__z_coords[z], self.__x_coords[x])
 
+    # Functions to calculate geometry
+    def __th_xi(self, i):
+        return (i - 1) / self.span_stations * np.pi
+
+    def __xi(self, i):
+        return .5 * (self.__la / 2 * (1 - np.cos(self.__th_xi(i))) + self.__la / 2 * (
+                    1 - np.cos(self.__th_xi(i + 1))))
+
+    def __th_zi(self, i):
+        return (i - 1) / self.chord_stations * np.pi
+
+    def __zi(self, i):
+        return -.5 * (self.__Ca / 2 * (1 - np.cos(self.__th_zi(i))) + self.__Ca / 2 * (
+                    1 - np.cos(self.__th_zi(i + 1))))
+
+    # Methods to use:
     def station_x_coords(self):
         return self.__x_coords
 
@@ -99,8 +99,10 @@ if __name__ == '__main__':
     aileron = AileronGeometry()
     x = aileron.station_x_coords()
     z = aileron.station_z_coords()
+
+    # All data, coordinates repeated
+    x_a, z_a, p_a = aileron.data_x_z_p()
+
     print(aileron.station_x_coords())
     print(aileron.station_z_coords())
-    import matplotlib.pyplot as plt
-    plt.plot(x,z)
-    plt.show()
+

@@ -36,6 +36,8 @@ def def_integral(fn, start, stop, num_bins=100):
         stop_ar = np.array([stop])
     else:
         stop_ar = stop
+    del start, stop
+
     steps = np.linspace(start_ar, stop_ar, num_bins, axis=0) # Need to find integral of each column
     width = steps[1, :] - steps[0, :] # Uniform bin width
 
@@ -49,7 +51,7 @@ def def_integral(fn, start, stop, num_bins=100):
     return areas_ar.sum(axis=0)
 
 
-def indef_integral(fn, start, stop, num_var_integrals=1, **kwargs):
+def variable_integral(fn, start, stop, num_var_integrals=1, **kwargs):
     num_bins = kwargs.pop('num_bins', 100)
     if isinstance(start, (float, int)):
         start_ar = np.array([start])
@@ -60,22 +62,24 @@ def indef_integral(fn, start, stop, num_var_integrals=1, **kwargs):
     else:
         stop_ar = stop
 
+    del start, stop
+
     steps = np.linspace(start_ar, stop_ar, num_bins) # Need to find integral of each column
     width = steps[1, :] - steps[0, :] # Uniform bin width
 
     steps = np.squeeze(steps) # Remove extra dimensions with shape 1
 
     if num_var_integrals == 1:
-        data = def_integral(fn, start, steps, num_bins=num_bins)
+        data = def_integral(fn, start_ar, steps, num_bins=num_bins)
     else:
-        data = indef_integral(fn, start, steps.T, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
+        data = variable_integral(fn, start_ar, steps.T, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
 
     data_areas = np.multiply((data[:-1] + data[1:]) / 2, width)
     return data_areas.sum(axis=0)
 
 
 def station_loads(**kwargs):
-    num_bins = kwargs.pop('num_bins', 100)
+    num_bins = kwargs.pop('num_bins', 1000)
     q_x = []
     x_coord = []
     ail = AileronGeometry()
@@ -103,7 +107,7 @@ def main():
 
     int_fn = InterpolateRBF(z, p)
 
-    second_int = indef_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
+    second_int = variable_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
     print(second_int)
 
 if __name__ == '__main__':
