@@ -92,8 +92,9 @@ Change segments by keeping track of perimeter, if perimeter exceeds the length a
 """
 
 
-func_list = [[qb_1_1,qb_1_2],[]]
+func_list = [[qb_1_1,qb_1_2],[], [], []]
 qb_val_list = [qb_2_val]
+moment_arm_list = [[h/2,C-h/2],[],[],[]]
 
 for i in range(sz):  # go through the outer section
 
