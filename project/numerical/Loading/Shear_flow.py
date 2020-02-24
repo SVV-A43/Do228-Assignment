@@ -96,7 +96,9 @@ Change segments by keeping track of perimeter, if perimeter exceeds the length a
 
 func_list = [[qb_1_1,qb_1_2],[], [], []]
 qb_val_list = [qb_2_val]
-moment_arm_list = [[h/2,C-h/2],[],[],[]]
+#moment arm from traling edge [vertical distance, horizontal distance] 1,3,4,6
+#for 2 and 5 = [0,eta],[0,eta]
+moment_arm_list = [[0,C+h/2],[h/2,C-h/2],[0,0],[h/2,C-h/2]]
 
 for i in range(sz):  # go through the outer section
 
