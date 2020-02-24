@@ -1,4 +1,9 @@
 numpy
 scipy
 matplotlib
+pandas
+pytest
 
+tqdm
+sklearn
+numexpr

@@ -24,7 +24,7 @@ x = []
 
 P = []
 
-datastring = open('/Users/Axel/Downloads/Data1.dat')
+datastring = open('aero_loading_data/aerodynamicloaddo228.dat')
 
 df= pd.DataFrame(datastring)
 df.columns=['Data']
