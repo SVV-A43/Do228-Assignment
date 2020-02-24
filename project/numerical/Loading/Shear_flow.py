@@ -41,6 +41,8 @@ def qb_2_2(s):
 
 # qb_2_val = def_integral(qb_2_1, 0, 1, num_bins=100) + def_integral(qb_2_2, 0, 1, num_bins=100)
 
+
+
 # Shear flow 1,3,4,6
 def qb_1_1(s):
     return -Vy*t*(h/2)*m.sin(s)*(h/2)/I_zz
@@ -51,6 +53,17 @@ def qb_3_1(s):
     return -Vy*t_skin*((h/2)-h*s/2*l_sk)/I_zz
 def qb_3_2(s):
     return -Vz*t*(eta-s)/I_yy
+
+def qb_4_1(s):
+    return -Vy*t_skin*-(h*s/2*l_sk)/I_zz
+def qb_4_2(s):
+    return -Vz*t*(eta-s)/I_yy
+
+def qb_6_1(s):
+    return -Vy*t*(h/2)*-m.sin(s)*(h/2)/I_zz
+def qb_6_2(s):
+    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
+
 dx = 0.0001
 x = np.arange(0, C+dx,dx)
 x = np.append(x, x[::-1])
@@ -77,6 +90,8 @@ s_last = -10**4
 Go through outer section, using x, y find if the current location is equal to a stiffener position, if true add to the correct segment.
 Change segments by keeping track of perimeter, if perimeter exceeds the length a segment, then switch to next segment.
 """
+
+
 func_list = [[qb_1_1,qb_1_2],[]]
 qb_val_list = [qb_2_val]
 
@@ -106,30 +121,6 @@ for i in range(sz):  # go through the outer section
         #add to q
 
     s_current += m.hypot(dx, y[i]-y[i-1])
-
-
-
-# Shear flow 1,3,4,6
-def qb_1_1(s):
-    return -Vy*t*(h/2)*m.sin(s)*(h/2)/I_zz
-def qb_1_2(s):
-    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
-
-def qb_3_1(s):
-    return -Vy*t_skin*((h/2)-h*s/2*l_sk)/I_zz
-def qb_3_2(s):
-    return -Vz*t*(eta-s)/I_yy
-
-def qb_4_1(s):
-    return -Vy*t_skin*-(h*s/2*l_sk)/I_zz
-def qb_4_2(s):
-    return -Vz*t*(eta-s)/I_yy
-
-def qb_6_1(s):
-    return -Vy*t*(h/2)*-m.sin(s)*(h/2)/I_zz
-def qb_6_2(s):
-    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
-
 
 # shear flow at 5
 def qb_5_1(s):
