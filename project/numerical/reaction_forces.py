@@ -93,22 +93,15 @@ def equilibrium_eq_resultants():
     q_x = G.q_tilde()
     t_x = G.tau_tilde()
 
-    bounds = np.zeros((11,1))
-    bounds[7, 0] = -1* G.d_1*np.sin(G.theta)
-    bounds[8, 0] = -1* G.d_3*np.sin(G.theta)
-    bounds[9, 0] = G.d_1*np.cos(G.theta)
-    bounds[10, 0]= G.d_3*np.cos(G.theta)
-
-
-    c_vals[0, 0] = def_integral(q_x.interpolate, 0, G.l_a) + (G.P * np.sin(G.theta) * (G.l_a - G.x_a_2))
+    c_vals[0, 0] = def_integral(q_x, 0, G.l_a) + (G.P * np.sin(G.theta) * (G.l_a - G.x_a_2))
     c_vals[1, 0] = G.P * np.cos(G.theta) * (G.l_a - G.x_a_2)
-    c_vals[2, 0] = -1*def_integral(t_x.interpolate, 0, G.l_a) + (G.P * np.cos(G.theta) * G.y_p) - (G.P * np.sin(G.theta) * (G.z_h - G.z_tilde))
-    c_vals[3, 0] = -1*np.sin(G.theta) - def_integral(q_x.interpolate, 0, G.l_a)
+    c_vals[2, 0] = -1*def_integral(t_x, 0, G.l_a) + (G.P * np.cos(G.theta) * G.y_p) - (G.P * np.sin(G.theta) * (G.z_h - G.z_tilde))
+    c_vals[3, 0] = -1*np.sin(G.theta) - def_integral(q_x, 0, G.l_a)
     c_vals[4, 0] = -1*G.P * np.cos(G.theta)
-    c_vals[5, 0] = def_integral(q_x.interpolate, 0, G.x2, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz)
+    c_vals[5, 0] = def_integral(q_x, 0, G.x2, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz)
     c_vals[8, 0] = G.P * np.cos(G.theta) * (G.x3 - G.x_a_2)**3 / (6*G.E * G.I_yy)
-    c_vals[9, 0] = def_integral(q_x.interpolate, 0, G.x1, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz)
-    c_vals[10, 0] = def_integral(q_x.interpolate, 0, G.x3, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) + G.P * np.sin(G.theta) / (6 * G.E * G.I_zz)
+    c_vals[9, 0] = def_integral(q_x, 0, G.x1, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz)
+    c_vals[10, 0] = def_integral(q_x, 0, G.x3, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) + G.P * np.sin(G.theta) / (6 * G.E * G.I_zz)
 
     # Corrections:
     c_vals[0, :] *= -1
@@ -116,7 +109,7 @@ def equilibrium_eq_resultants():
     c_vals[7, :] *= -1
     c_vals[8, :] *= -1
 
-    b = bounds - c_vals
+    b = G.bound_conds - c_vals
 
     return b
 

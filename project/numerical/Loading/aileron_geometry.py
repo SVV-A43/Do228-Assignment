@@ -13,6 +13,8 @@ author: lmaio
 import sys
 import os
 import numpy as np
+
+from tqdm import tqdm
 from definitions import AERO_LOADING_DATA
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
@@ -55,6 +57,15 @@ class AileronGeometry():
         self.E = 73.1 * 10**9       # [Pa]
         self.P = 20.6 * 10 ** 3     # [N]
 
+        ### Boundary Conditions
+        self.bound_conds = np.zeros((11, 1))
+        self.bound_conds[7, 0] = -1 * self.d_1 * np.sin(self.theta)
+        self.bound_conds[8, 0] = -1 * self.d_3 * np.sin(self.theta)
+        self.bound_conds[9, 0] = self.d_1 * np.cos(self.theta)
+        self.bound_conds[10, 0] = self.d_3 * np.cos(self.theta)
+
+
+        ### Class Attributes
         self.__pressure = np.genfromtxt(filename, delimiter=',')
         self.num_span_stations = len(self.__pressure[0, :])
         self.num_chord_stations = len(self.__pressure[:, 0])
@@ -89,6 +100,10 @@ class AileronGeometry():
         for z in range(self.num_chord_stations):
             for x in range(self.num_span_stations):
                 self.__load_coords[z, x] = (self.__z_coords[z], self.__x_coords[x])
+
+
+
+
 
     # Functions to calculate geometry
     def __th_xi(self, i):
@@ -131,7 +146,7 @@ class AileronGeometry():
         q_x = []
         x_coords = []
 
-        for station in range(self.num_span_stations):
+        for station in tqdm(range(self.num_span_stations)):
             x, z, p = self.station_data(station)
             int_fn = InterpolateRBF(z, p)
             station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
@@ -143,7 +158,7 @@ class AileronGeometry():
         # Create interpolation function
         q_tilde_x = InterpolateRBF(x_coords, q_x)
 
-        return q_tilde_x
+        return q_tilde_x.interpolate
 
     def tau_tilde(self, **kwargs):
         num_bins = kwargs.pop('num_bins', 100)
@@ -166,7 +181,7 @@ class AileronGeometry():
         # Create interpolation function
         tau_tilde_x = InterpolateRBF(x_coords, tau_x)
 
-        return tau_tilde_x
+        return tau_tilde_x.interpolate
 
 
 
