@@ -32,7 +32,7 @@ class LoadingTests(unittest.TestCase):
     def calc_error(real, approx):
         error = real - approx
         rel_error = np.abs(error) / real
-        if rel_error == float('inf'):
+        if rel_error.any() == float('inf'):
             rel_error = 0
         return rel_error
 
@@ -239,10 +239,10 @@ class LoadingTests(unittest.TestCase):
         r, _ = reaction_forces()
         q_x = G.q_tilde()
 
-        total_force_q = def_integral(q_x.interpolate, 0, G.l_a)
+        total_force_q = def_integral(q_x, 0, G.l_a)
 
-        sum_y = r[0] + r[1] + r[2] + r[6]*np.sin(G.theta) + G.P*np.sin(G.theta) + -1*total_force_q
-        sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) + G.P*np.cos(G.theta)
+        sum_y = r[0] + r[1] + r[2] + r[6]*np.sin(G.theta) - G.P*np.sin(G.theta) + -1*total_force_q
+        sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) - G.P*np.cos(G.theta)
         print(sum_y)
 
         # Should be very close to zero
@@ -252,15 +252,16 @@ class LoadingTests(unittest.TestCase):
     def test_deflection_y(self):
         '''The deflection at x2 should be zero because this is how the reaction forces are calculated'''
         G = AileronGeometry()
+        q_x = G.q_tilde()
         r, _ = reaction_forces()
 
         ref_v_x1 = G.d_1*np.cos(G.theta)
         ref_v_x2 = 0
         ref_v_x3 = G.d_3*np.cos(G.theta)
 
-        v_x1 = deflection_y(G.x1, r)
-        v_x2 = deflection_y(G.x2, r)
-        v_x3 = deflection_y(G.x3, r)
+        v_x1 = deflection_y(G.x1, r, q_x)
+        v_x2 = deflection_y(G.x2, r, q_x)
+        v_x3 = deflection_y(G.x3, r, q_x)
 
         error1 = self.calc_error(ref_v_x1, v_x1)
         error2 = self.calc_error(ref_v_x2, v_x2)

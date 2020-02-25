@@ -43,9 +43,8 @@ def deflection_y(x, reaction_forces, q_x):
 
     terms = np.zeros((6,))
 
+    terms[0] = R1y /6 * mac(x - G.x1)** 3
     terms[1] = -1* def_integral(q_x, 0, x, num_var_integrals=4, num_bins=20)
-
-    terms[0] = R1y * mac(x-G.x1)**3 / 6
     terms[2] = F * np.sin(G.theta) / 6 * mac(x-G.x_a_1)**3
     terms[3] = R2y / 6 * mac(x-G.x2)**3
     terms[4] = -1* G.P * np.sin(G.theta) / 6 * mac(x-G.x_a_2)**3
