@@ -28,7 +28,7 @@ Vy = 1
 Vz = 1
 # I_zz = 1
 # I_yy = 1
-eta = 0.2
+eta = C/2
 # C = 3
 
 # Segment 2, then 1,3,4,6,5
@@ -71,7 +71,7 @@ spacing = perimeter/n
 perimeter_addition = 0
 
 qb_current = 0  # start at cut
-
+qb_stiff_current = 0
 for i in range(sz):  # go through the outer section
 
     # Switch segments
@@ -79,18 +79,19 @@ for i in range(sz):  # go through the outer section
         qb_lastval.append(qb_current)
         qb_val_list[i] = qb_current
         print("Finished at segment {} with x,y {},{} and qb of {}".format(seg_i,x[i],y[i],qb_current))
+        print("Max qb value of {} found at x,y = {},{}".format(np.amax(qb_val_list), x[np.where(qb_val_list == np.amax(qb_val_list))], y[np.where(qb_val_list == np.amax(qb_val_list))]))
         break
 
     if x[i] == h/2 or x[i] == C:
         s_current = 0
-        print("qb_current: ", qb_current)
+        # print("qb_current: ", qb_current)
         qb_lastval.append(qb_current)
         seg_i += 1
         if seg_i == 1:
             qb_current += qb_2_val
         else:
             qb_current += qb_lastval[-1]
-        print("segment ", seg_i, "with x,y", x[i], y[i-1])
+        # print("segment ", seg_i, "with x,y", x[i], y[i-1])
 
 
     if x[i] <= h/2 and seg_i == 0:
@@ -119,22 +120,22 @@ for i in range(sz):  # go through the outer section
 
     qb_current = def_integral(integrate_func1, 0, s_current, num_var_integrals=1) + def_integral(integrate_func2, 0, s_current, num_var_integrals=1)
 
+    #Stiffener addition to qb
     perimeter_old = perimeter_addition
     perimeter_addition += m.hypot(dx, y[i]-y[i-1])
     if perimeter_addition > spacing and perimeter_old < spacing and stiff_counter <= 10:
         if perimeter_addition - spacing <= perimeter_old - spacing:
             stiff_loc[stiff_counter,0] = x[i]
             stiff_loc[stiff_counter,1] = y[i]
-            qb_current += A_stiff*(x[i] + y[i])
-            print("stiffener added at", x[i], y[i])
+            qb_stiff_current += A_stiff * (x[i] + y[i])
         else:
             stiff_loc[stiff_counter,0] = x[i-1]
             stiff_loc[stiff_counter,1] = y[i-1]
-            qb_current += A_stiff*(x[i-1] + y[i-1])
-            print("stiffener added at", x[i-1], y[i-1])
+            qb_stiff_current += A_stiff * (x[i - 1] + y[i - 1])
         perimeter_addition -= spacing
         stiff_counter += 1
 
+    qb_current = qb_current + qb_stiff_current
     qb_val_list[i] = qb_current
     s_current += m.hypot(dx, y[i]-y[i-1])
 
@@ -154,23 +155,23 @@ qb_2_val = def_integral(qb_2_1, 0, h/2, num_var_integrals=1) + def_integral(qb_2
 qb_5_val = def_integral(qb_5_1, -h/2, 0, num_var_integrals=1) + def_integral(qb_5_2, -h/2, 0, num_var_integrals=1)
 
 """Spar shear flow distribution"""
-y = np.arange(-h/2, h/2, dx)
-sz = np.size(y)
-x = np.zeros(sz)
-qb_val_list = np.zeros(sz)
-qb_current = 0
-for i in range(sz):
-    if y[i] == 0.:
-
-    if y[i] <= 0:
+y_spar = np.arange(-h/2, h/2, dx)
+sz_spar = np.size(y_spar)
+x_spar = np.zeros(sz_spar)
+qb_spar_val_list = np.zeros(sz_spar)
+qb_last = qb_lastval[2] # qb value before entering 5
+for i in range(sz_spar):
+    if y_spar[i] == 0.:
+        qb_last = 0  # cut at mid of spar
+    if y_spar[i] <= 0:
         s_0 = -h/2
-        s_current = y[i]
     else:
         s_0 = 0
-        s_current = y[i]
 
-    qb_i_1 = -Vy*t_skin*y[i]/I_zz
-    qb_i_2 = -Vz*t_skin*(eta - x[i])/I_yy
+    s_current = y_spar[i]
+
+    qb_i_1 = -Vy*t_skin*y_spar[i]/I_zz
+    qb_i_2 = -Vz*t_skin*(eta - x_spar[i])/I_yy
     qb_i = [qb_i_1,qb_i_2]
 
     def integrate_func1(s):
@@ -180,10 +181,11 @@ for i in range(sz):
         return np.ones_like(s) * qb_i[1]
 
     qb_current = def_integral(integrate_func1, s_0, s_current, num_var_integrals=1) + def_integral(integrate_func2, s_0, s_current, num_var_integrals=1)
-    qb_val_list[i] = qb_current
+    qb_current += qb_last
+    qb_spar_val_list[i] = qb_current
 
 
-print("Value of q2 at spar",qb_2_val)
+print("Value of qb2 at spar",qb_2_val)
 
 qb_1 = qb_lastval[0]
 qb_2 = qb_2_val
@@ -234,6 +236,11 @@ qs_0_1 = -(qb_1*m.pi*h/4 + qb_2*h/2 + qb_5*h/2 + qb_6*m.pi*h/4)/p1
 #triangle
 p2 = h + 2*l_sk
 qs_0_2 = -(qb_3*l_sk + qb_4*l_sk + qb_2*h/2 + qb_5*h/2)/p2
+
+
+"""Add qso to qb for final shear flow distribution"""
+
+# Outer section
 q_val_list = qb_val_list.copy()
 seg_i = 0
 for i in range(sz):  # go through the outer section
@@ -241,33 +248,39 @@ for i in range(sz):  # go through the outer section
     # Switch segments
     if seg_i != 0 and x[i] == 0.:
         q_val_list[i] += qs_0_1
-        print("Finished at segment {} with x,y {},{} and qb of {}".format(seg_i,x[i],y[i],qb_current))
+        print("Finished at segment {} with x,y {},{} and final q of {}".format(seg_i,x[i],y[i],qb_current))
+        print("Max q value of {} found at x,y = {},{}".format(np.amax(q_val_list), x[np.where(q_val_list == np.amax(q_val_list))], y[np.where(q_val_list == np.amax(q_val_list))]))
         break
 
     if x[i] == h/2 or x[i] == C:
         seg_i += 1
 
     if x[i] <= h/2 and seg_i == 0:
-        y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
         q_val_list[i] += qs_0_1
 
     elif seg_i == 1:
-        y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C)
         q_val_list[i] += qs_0_2
 
     elif seg_i == 2:
-        y[i] = -(-((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C))
         q_val_list[i] += qs_0_2
 
     elif seg_i == 3:
-        y[i] = -m.sqrt((h/2)**2-(x[i]-h/2)**2)
         q_val_list[i] += qs_0_1
 
-print(qb_val_list)
-print(q_val_list)
+# Spar section
+q_spar_val_list = qb_spar_val_list.copy()
+for i in range(sz_spar):
+    if y_spar[i] == 0.:
+        qb_current = 0  # cut at mid of spar
+    q_spar_val_list[i] += qs_0_2 - qs_0_1
+    s_current = y_spar[i]
+
+
+# print(qb_val_list)
+# print(q_val_list)
 
 # print(stiff_loc)
-print(qb_lastval)
+# print(qb_lastval)
 
 # plt.plot(stiff_loc[:,0],stiff_loc[:,1], marker="o")
 # plt.plot(x,y)
