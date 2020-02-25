@@ -46,8 +46,6 @@ def tau_tilde(**kwargs):
     tau_x = []
     x_coords = []
 
-
-
     for station in range(G.num_span_stations):
         x, z, p = G.station_data(station)
         int_fn = InterpolateRBF(z, p)
@@ -150,14 +148,25 @@ def equilibrium_eq_resultants():
 def solve_reaction_forces():
     A = equilibrium_eq_coefficients()
     b = equilibrium_eq_resultants()
-
+    r_force_names = ['R 1,y',
+                     'R 2,y',
+                     'R 3,y',
+                     'R 1,z',
+                     'R 2,z',
+                     'R 3,z',
+                     '    F',
+                     '  C 1',
+                     '  C 2',
+                     '  C 3',
+                     '  C 4']
     x = np.linalg.solve(A,b)
-    return x
+    return x, r_force_names
 
 
 if __name__ == '__main__':
     # A = equilibrium_eq_coefficients()
     # b = equilibrium_eq_resultants()
 
-    x = solve_reaction_forces()
-    print(x)
+    x, names= solve_reaction_forces()
+    for val, name in zip(x[:,0], names):
+        print(f'{name}: {val}')
