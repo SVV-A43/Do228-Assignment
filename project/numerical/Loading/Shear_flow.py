@@ -41,10 +41,7 @@ def qb_2_2(s):
     val = -eta*Vz*t_spar/I_yy
     return np.ones_like(s) * val
 
-
-qb_2_val = def_integral(qb_2_1, 0, 1, num_var_integrals=1) + def_integral(qb_2_2, 0, 1, num_var_integrals=1)
-
-print(qb_2_val)
+qb_2_val = def_integral(qb_2_1, 0, h/2, num_var_integrals=1) + def_integral(qb_2_2, 0, h/2, num_var_integrals=1)
 
 dx = 0.0001
 x = np.arange(0, C+dx,dx)
@@ -155,6 +152,38 @@ def qb_5_2(s):
 
 qb_2_val = def_integral(qb_2_1, 0, h/2, num_var_integrals=1) + def_integral(qb_2_2, 0, h/2, num_var_integrals=1)
 qb_5_val = def_integral(qb_5_1, -h/2, 0, num_var_integrals=1) + def_integral(qb_5_2, -h/2, 0, num_var_integrals=1)
+
+"""Spar shear flow distribution"""
+y = np.arange(-h/2, h/2, dx)
+sz = np.size(y)
+x = np.zeros(sz)
+qb_val_list = np.zeros(sz)
+qb_current = 0
+for i in range(sz):
+    if y[i] == 0.:
+
+    if y[i] <= 0:
+        s_0 = -h/2
+        s_current = y[i]
+    else:
+        s_0 = 0
+        s_current = y[i]
+
+    qb_i_1 = -Vy*t_skin*y[i]/I_zz
+    qb_i_2 = -Vz*t_skin*(eta - x[i])/I_yy
+    qb_i = [qb_i_1,qb_i_2]
+
+    def integrate_func1(s):
+        return np.ones_like(s) * qb_i[0]
+
+    def integrate_func2(s):
+        return np.ones_like(s) * qb_i[1]
+
+    qb_current = def_integral(integrate_func1, s_0, s_current, num_var_integrals=1) + def_integral(integrate_func2, s_0, s_current, num_var_integrals=1)
+    qb_val_list[i] = qb_current
+
+
+print("Value of q2 at spar",qb_2_val)
 
 qb_1 = qb_lastval[0]
 qb_2 = qb_2_val
