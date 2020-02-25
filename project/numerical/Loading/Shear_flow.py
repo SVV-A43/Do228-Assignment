@@ -130,3 +130,32 @@ def qb_5_1(s):
     return -Vy*t_spar*s/I_zz
 def qb_5_2(s):
     return np.array([[-eta*Vz*t_spar/I_yy]])
+
+
+theta = m.asin((h/2)/l_sk)
+
+qb_1_h = qb_1 / 2
+qb_1_v = qb_1 / 2
+
+qb_2_h = 0
+qb_2_v = qb_2
+
+qb_3_h = qb_3 * m.cos(theta)
+qb_3_v = qb_3 * m.sin(theta)
+
+qb_4_h = qb_3 * m.cos(theta)
+qb_4_v = qb_3 * m.sin(theta)
+
+qb_5_h = 0
+qb_5_v = qb_5
+
+qb_6_h = qb_6 / 2
+qb_6_v = qb_6 / 2
+
+M_b_1 = (C+h/2) * qb_1_v
+M_b_2 = eta * qb_2_v
+M_b_3 = h/2 * qb_3_h + (C-h/2) * -qb_3_v
+M_b_4 = 0
+M_b_5 = eta * qb_5_v
+M_b_6 = h/2 * qb_6_h + (C-h/2) * qb_6_v
+
