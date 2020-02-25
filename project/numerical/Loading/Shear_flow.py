@@ -2,7 +2,9 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as plt
 from project.numerical.Loading.integration import def_integral
+from project.numerical.reaction_forces import AileronGeometry
 
+G = AileronGeometry ()
 
 # Real values
 C = 0.515
@@ -18,17 +20,19 @@ l_sk = m.hypot(C-h/2,h/2)
 
 I_zz = 1.4221372629975417e-5
 I_yy = 5.643650631210155e-5
-
+Vy = 3
+Vz = 4
+eta = G.z_tilde
 # Test values
 
 # h = 2
 # t_skin = 1
 # t_spar = 1
-Vy = 1
-Vz = 1
+# Vy = 1
+# Vz = 1
 # I_zz = 1
 # I_yy = 1
-eta = C/2
+# eta = 1
 # C = 3
 
 # Segment 2, then 1,3,4,6,5
@@ -161,7 +165,7 @@ x_spar = np.zeros(sz_spar)
 qb_spar_val_list = np.zeros(sz_spar)
 qb_last = qb_lastval[2] # qb value before entering 5
 for i in range(sz_spar):
-    if y_spar[i] == 0.:
+    if dx/10 >= y_spar[i] >= -dx/10:
         qb_last = 0  # cut at mid of spar
     if y_spar[i] <= 0:
         s_0 = -h/2
@@ -170,8 +174,8 @@ for i in range(sz_spar):
 
     s_current = y_spar[i]
 
-    qb_i_1 = -Vy*t_skin*y_spar[i]/I_zz
-    qb_i_2 = -Vz*t_skin*(eta - x_spar[i])/I_yy
+    qb_i_1 = -Vy*t_spar*y_spar[i]/I_zz
+    qb_i_2 = -Vz*t_spar*(eta - x_spar[i])/I_yy
     qb_i = [qb_i_1,qb_i_2]
 
     def integrate_func1(s):
@@ -180,7 +184,7 @@ for i in range(sz_spar):
     def integrate_func2(s):
         return np.ones_like(s) * qb_i[1]
 
-    qb_current = def_integral(integrate_func1, s_0, s_current, num_var_integrals=1) + def_integral(integrate_func2, s_0, s_current, num_var_integrals=1)
+    qb_current = def_integral(integrate_func1, s_0, s_current, num_var_integrals=2) + def_integral(integrate_func2, s_0, s_current, num_var_integrals=1)  #integrating qb_2_1 twice gives correct value...
     qb_current += qb_last
     qb_spar_val_list[i] = qb_current
 
@@ -275,7 +279,24 @@ for i in range(sz_spar):
     q_spar_val_list[i] += qs_0_2 - qs_0_1
     s_current = y_spar[i]
 
+q_1 = qb_1 + qs_0_1
+q_2 = qb_2 + qs_0_2 - qs_0_1
+q_3 = qb_3 + qs_0_2
+q_4 = qb_4 + qs_0_2
+q_5 = qb_5 + qs_0_2 - qs_0_1
+q_6 = qb_6 + qs_0_1
 
+# Total torque
+Am1 = 0.5* m.pi*(h/2)**2
+Am2 = 0.5 * (C-h/2)*h
+T = 2*Am1*qs_0_1 + 2*Am2*qs_0_2
+
+comp_eq_1 = 1/(2*Am1)*((q_1*m.pi*h/4)/t_skin + (qb_2*h/2)/t_spar + (qb_5*h/2)/t_spar + (qb_6*m.pi*h/4)/t_skin)
+comp_eq_2 = 1/(2*Am2)*((qb_3*l_sk)/t_skin + (qb_4*l_sk)/t_skin + (qb_2*h/2)/t_spar + (qb_5*h/2)/t_spar)
+T = 1
+J1 = T/(comp_eq_1)
+J2 = T/(comp_eq_2)
+print(J1, J2)
 # print(qb_val_list)
 # print(q_val_list)
 
