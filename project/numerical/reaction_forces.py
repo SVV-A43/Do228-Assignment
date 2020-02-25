@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.interpolation import InterpolateRBF
-from project.numerical.Loading.integration import def_integral, variable_integral
+from project.numerical.Loading.integration import def_integral, def_integral
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
@@ -135,15 +135,15 @@ def equilibrium_eq_resultants():
     q_x = q_tilde()
     t_x = tau_tilde()
 
-    b[0, 0] = variable_integral(q_x.interpolate, 0, G.l_a) + (G.P * np.sin(G.theta)*(G.l_a - G.x_a_2))
+    b[0, 0] = def_integral(q_x.interpolate, 0, G.l_a) + (G.P * np.sin(G.theta) * (G.l_a - G.x_a_2))
     b[1, 0] = G.P * np.cos(G.theta) * (G.l_a - G.x_a_2)
     b[2, 0] = -1*def_integral(t_x.interpolate, 0, G.l_a) + (G.P * np.cos(G.theta) * G.y_p) - (G.P * np.sin(G.theta) * (G.z_h - G.z_tilde))
     b[3, 0] = -1*np.sin(G.theta) - def_integral(q_x.interpolate, 0, G.l_a)
     b[4, 0] = -1*G.P * np.cos(G.theta)
-    b[5, 0] = variable_integral(q_x.interpolate, 0, G.x2, num_var_integrals=3, num_bins=20) / (G.E * G.I_zz)
+    b[5, 0] = def_integral(q_x.interpolate, 0, G.x2, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz)
     b[8, 0] = G.P * np.cos(G.theta) * (G.x3 - G.x_a_2)**3 / (6*G.E * G.I_yy)
-    b[9, 0] = variable_integral(q_x.interpolate, 0, G.x1, num_var_integrals=3, num_bins=20) / (G.E * G.I_zz) - G.d_1
-    b[10, 0] = variable_integral(q_x.interpolate, 0, G.x3, num_var_integrals=3, num_bins=20) / (G.E * G.I_zz) + G.P*np.sin(G.theta)/(6*G.E*G.I_zz) - G.d_3
+    b[9, 0] = def_integral(q_x.interpolate, 0, G.x1, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) - G.d_1
+    b[10, 0] = def_integral(q_x.interpolate, 0, G.x3, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) + G.P * np.sin(G.theta) / (6 * G.E * G.I_zz) - G.d_3
 
     return -1 * b
 
