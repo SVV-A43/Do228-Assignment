@@ -197,6 +197,16 @@ M_b_6 = h/2 * qb_6_h + (C-h/2) * qb_6_v
 M_vy = (C-eta) * Vy
 M_vz = 0
 
+#semicircle
+p1 = m.pi*h/2 + h
+qs_0_1 = (qb_1 + qb_2 + qb_5 + qb_6)/p1
+
+#triangle
+p2 = h + 2*l_sk
+qs_0_2 = (qb_3 + qb_4 + qb_2 + qb_5)/p2
+
+qs_0 = qs_0_1 + qs_0_2
+
 
 print(stiff_loc)
 print(qb_lastval)
