@@ -147,10 +147,17 @@ def equilibrium_eq_resultants():
 
     return -1 * b
 
+def solve_reaction_forces():
+    A = equilibrium_eq_coefficients()
+    b = equilibrium_eq_resultants()
 
+    x = np.linalg.solve(A,b)
+    return x
 
 
 if __name__ == '__main__':
-    A = equilibrium_eq_coefficients()
-    b = equilibrium_eq_resultants()
-    print(b)
+    # A = equilibrium_eq_coefficients()
+    # b = equilibrium_eq_resultants()
+
+    x = solve_reaction_forces()
+    print(x)
