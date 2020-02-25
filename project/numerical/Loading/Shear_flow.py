@@ -66,8 +66,6 @@ Change segments by keeping track of perimeter, if perimeter exceeds the length a
 
 
 qb_lastval = [] # last values of qb1, qb3, qb4 and qb6
-#moment arm from traling edge [vertical distance, horizontal distance] 1,3,4,6
-#for 2 and 5 = [0,eta],[0,eta]
 
 # Stiffener locations and general shape
 
@@ -96,21 +94,6 @@ for i in range(sz):  # go through the outer section
             qb_current += qb_lastval[-1]
         print("segment ", seg_i, "with x,y", x[i], y[i-1])
 
-    # Shear flow 1,3,4,6
-    # def qb_3_1(s):
-    #     return -Vy*t_skin*((h/2)-h*s/2*l_sk)/I_zz
-    # def qb_3_2(s):
-    #     return -Vz*t_skin*(eta-s)/I_yy
-    #
-    # def qb_4_1(s):
-    #     return -Vy*t_skin*-(h*s/2*l_sk)/I_zz
-    # def qb_4_2(s):
-    #     return -Vz*t_skin*(eta-s)/I_yy
-    #
-    # def qb_6_1(s):
-    #     return -Vy*t_skin*(h/2)*-np.sin(s)*(h/2)/I_zz
-    # def qb_6_2(s):
-    #     return -Vz*t_skin*(eta+(h/2)*(1-np.cos(s)))*(h/2)/I_yy
 
     if x[i] <= h/2 and seg_i == 0:
         y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
@@ -200,7 +183,8 @@ qb_5_v = qb_5
 qb_6_h = qb_6 / 2
 qb_6_v = qb_6 / 2
 
-
+#moment arm from traling edge [vertical distance, horizontal distance] 1,3,4,6
+#for 2 and 5 = [0,eta],[0,eta]
 moment_arm_list = [[0,C+h/2],[h/2,C-h/2],[0,0],[h/2,C-h/2]]
 
 M_b_1 = (C) * qb_1_v
