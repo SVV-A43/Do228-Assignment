@@ -17,10 +17,13 @@ from scipy.integrate import quad
 from scipy.interpolate import Rbf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
+from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.interpolation import InterpolateRBF
 from project.numerical.Loading.integration import def_integral, def_integral
-from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants
-from project.numerical.Loading.aileron_geometry import AileronGeometry
+from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
+                                                reaction_forces
+from project.numerical.deflection import deflection_y
+
 
 
 class LoadingTests(unittest.TestCase):
@@ -28,7 +31,10 @@ class LoadingTests(unittest.TestCase):
     @staticmethod
     def calc_error(real, approx):
         error = real - approx
-        return np.abs(error) / real
+        rel_error = np.abs(error) / real
+        if rel_error == float('inf'):
+            rel_error = 0
+        return rel_error
 
     def test_uni_variate_linear_RBF(self):
         # Create random data to generate interpolation functions on
@@ -172,6 +178,7 @@ class LoadingTests(unittest.TestCase):
         num_sol_n_2 = def_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
         num_sol_n_3 = def_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
         num_sol_n_4 = def_integral(fn_test, start, end, num_var_integrals=4, num_bins=40)
+
         # Lower resolution due to memory restrictions (LONG RUNTIME > 1min):
         num_sol_n_5 = def_integral(fn_test, start, end, num_var_integrals=5, num_bins=40)
 
@@ -226,3 +233,41 @@ class LoadingTests(unittest.TestCase):
 
         assert error1 < 0.01
         assert error2 < 0.01
+
+    def test_reaction_forces(self):
+        G = AileronGeometry()
+        r, _ = reaction_forces()
+        q_x = G.q_tilde()
+
+        total_force_q = def_integral(q_x.interpolate, 0, G.l_a)
+
+        sum_y = r[0] + r[1] + r[2] + r[6]*np.sin(G.theta) + G.P*np.sin(G.theta) + -1*total_force_q
+        sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) + G.P*np.cos(G.theta)
+        print(sum_y)
+
+        # Should be very close to zero
+        assert sum_y < 0.001
+        assert sum_z < 0.001
+
+    def test_deflection_y(self):
+        '''The deflection at x2 should be zero because this is how the reaction forces are calculated'''
+        G = AileronGeometry()
+        r, _ = reaction_forces()
+
+        ref_v_x1 = G.d_1*np.cos(G.theta)
+        ref_v_x2 = 0
+        ref_v_x3 = G.d_3*np.cos(G.theta)
+
+        v_x1 = deflection_y(G.x1, r)
+        v_x2 = deflection_y(G.x2, r)
+        v_x3 = deflection_y(G.x3, r)
+
+        error1 = self.calc_error(ref_v_x1, v_x1)
+        error2 = self.calc_error(ref_v_x2, v_x2)
+        error3 = self.calc_error(ref_v_x3, v_x3)
+
+        assert error1 < 0.01
+        assert error2 < 0.01
+        assert error3 < 0.01
+
+
