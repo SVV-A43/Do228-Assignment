@@ -34,9 +34,9 @@ l_sk = m.hypot(C-h/2,h/2)
 # Shear flow 2
 
 def qb_2_1(s):
-    return -s*Vy*t_skin/I_zz
+    return -s*Vy*t_spar/I_zz
 def qb_2_2(s):
-    return  np.array([[-eta*Vz*t_skin/I_yy]])
+    return  np.array([[-eta*Vz*t_spar/I_yy]])
 
 
 # qb_2_val = def_integral(qb_2_1, 0, 1, num_bins=100) + def_integral(qb_2_2, 0, 1, num_bins=100)
@@ -45,24 +45,24 @@ def qb_2_2(s):
 
 # Shear flow 1,3,4,6
 def qb_1_1(s):
-    return -Vy*t*(h/2)*m.sin(s)*(h/2)/I_zz
+    return -Vy*t_skin*(h/2)*m.sin(s)*(h/2)/I_zz
 def qb_1_2(s):
-    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
+    return -Vz*t_skin*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
 
 def qb_3_1(s):
     return -Vy*t_skin*((h/2)-h*s/2*l_sk)/I_zz
 def qb_3_2(s):
-    return -Vz*t*(eta-s)/I_yy
+    return -Vz*t_skin*(eta-s)/I_yy
 
 def qb_4_1(s):
     return -Vy*t_skin*-(h*s/2*l_sk)/I_zz
 def qb_4_2(s):
-    return -Vz*t*(eta-s)/I_yy
+    return -Vz*t_skin*(eta-s)/I_yy
 
 def qb_6_1(s):
-    return -Vy*t*(h/2)*-m.sin(s)*(h/2)/I_zz
+    return -Vy*t_skin*(h/2)*-m.sin(s)*(h/2)/I_zz
 def qb_6_2(s):
-    return -Vz*t*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
+    return -Vz*t_skin*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
 
 dx = 0.0001
 x = np.arange(0, C+dx,dx)
@@ -127,6 +127,35 @@ for i in range(sz):  # go through the outer section
 
 # shear flow at 5
 def qb_5_1(s):
-    return -Vy*t*s/I_zz
+    return -Vy*t_spar*s/I_zz
 def qb_5_2(s):
-    return -Vz*t*s/I_yy
+    return np.array([[-eta*Vz*t_spar/I_yy]])
+
+
+theta = m.asin((h/2)/l_sk)
+
+qb_1_h = qb_1 / 2
+qb_1_v = qb_1 / 2
+
+qb_2_h = 0
+qb_2_v = qb_2
+
+qb_3_h = qb_3 * m.cos(theta)
+qb_3_v = qb_3 * m.sin(theta)
+
+qb_4_h = qb_3 * m.cos(theta)
+qb_4_v = qb_3 * m.sin(theta)
+
+qb_5_h = 0
+qb_5_v = qb_5
+
+qb_6_h = qb_6 / 2
+qb_6_v = qb_6 / 2
+
+M_b_1 = (C+h/2) * qb_1_v
+M_b_2 = eta * qb_2_v
+M_b_3 = h/2 * qb_3_h + (C-h/2) * -qb_3_v
+M_b_4 = 0
+M_b_5 = eta * qb_5_v
+M_b_6 = h/2 * qb_6_h + (C-h/2) * qb_6_v
+
