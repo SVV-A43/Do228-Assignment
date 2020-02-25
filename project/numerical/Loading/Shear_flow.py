@@ -20,8 +20,8 @@ l_sk = m.hypot(C-h/2,h/2)
 
 I_zz = 1.4221372629975417e-5
 I_yy = 5.643650631210155e-5
-Vy = 3
-Vz = 4
+Vy = 1
+Vz = 1
 eta = G.z_tilde
 # Test values
 
