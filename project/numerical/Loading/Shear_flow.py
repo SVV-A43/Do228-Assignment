@@ -14,21 +14,21 @@ t_st = 0.0012
 t_skin = 0.0011
 t_spar = 0.0022
 A_stiff = w_st*t_st + h_st*t_st
+l_sk = m.hypot(C-h/2,h/2)
 
 I_zz = 1.4221372629975417e-5
 I_yy = 5.643650631210155e-5
 
 # Test values
 
-h = 2
-t_skin = 1
+# h = 2
+# t_skin = 1
 Vy = 1
 Vz = 1
-I_zz = 1
-I_yy = 1
-eta = 1
-C = 3
-l_sk = m.hypot(C-h/2,h/2)
+# I_zz = 1
+# I_yy = 1
+eta = 0.1
+# C = 3
 
 # Segment 2, then 1,3,4,6,5
 # define qb_segment#_1 as Vy and  qbsegment#_2 as Vz
@@ -63,31 +63,22 @@ def qb_4_2(s):
     return -Vz*t_skin*(eta-s)/I_yy
 
 def qb_6_1(s):
-    return -Vy*t_skin*(h/2)*-m.sin(s)*(h/2)/I_zz
+    return -Vy*t_skin*(h/2)*-np.sin(s)*(h/2)/I_zz
 def qb_6_2(s):
-    return -Vz*t_skin*(eta+(h/2)*(1-m.cos(s)))*(h/2)/I_yy
+    return -Vz*t_skin*(eta+(h/2)*(1-np.cos(s)))*(h/2)/I_yy
 
 dx = 0.0001
 x = np.arange(0, C+dx,dx)
 x = np.append(x, x[-2::-1])
 sz = np.size(x)
 y = np.zeros(sz)
-stiff_loc = np.array([[ 0.        ,  0.        ],
-                      [ 0.0455    ,  0.09598828],
-                      [ 0.1479    ,  0.11642046],
-                      [ 0.2527    ,  0.08318465],
-                      [ 0.3576    ,  0.04991714],
-                      [ 0.4624    ,  0.01668133],
-                      [ 0.4624    , -0.01668133],
-                      [ 0.3576    , -0.04991714],
-                      [ 0.2527    , -0.08318465],
-                      [ 0.1479    , -0.11642046],
-                      [ 0.0455    , -0.09598828]])
+stiff_loc = np.zeros((n,2))
+stiff_counter = 1
+qb_val_list = np.zeros(sz)
 
 s_list = [m.pi/2, l_sk, l_sk, m.pi/2]  #list containing lengths of each skin 1,3,4,6
 s_current = 0
-seg_i = 0  #0: 1, 1: 3, 2: 4, 3: 6
-s_last = -10**4
+seg_i = 0
 
 """
 Go through outer section, using x, y find if the current location is equal to a stiffener position, if true add to the correct segment.
@@ -96,19 +87,40 @@ Change segments by keeping track of perimeter, if perimeter exceeds the length a
 
 
 func_list = [[qb_1_1,qb_1_2],[qb_3_1,qb_3_2],[qb_4_1,qb_4_2],[qb_6_1,qb_6_2]]
-qb_val_list = [qb_2_val]
+qb_lastval = [] # last values of qb1, qb3, qb4 and qb6
 #moment arm from traling edge [vertical distance, horizontal distance] 1,3,4,6
 #for 2 and 5 = [0,eta],[0,eta]
 moment_arm_list = [[0,C+h/2],[h/2,C-h/2],[0,0],[h/2,C-h/2]]
 
+# Stiffener locations and general shape
+
+perimeter = m.pi*(h/2) + 2*m.sqrt((h/2)**2+(C-h/2)**2)
+spacing = perimeter/n
+perimeter_addition = 0
+
+qb_current = 0  # start at cut
+
 for i in range(sz):  # go through the outer section
 
     # Switch segments
-    if s_current > s_list[seg_i]:
-        seg_i += 1
-        s_current = 0
+    if seg_i != 0 and x[i] == 0.:
+        qb_lastval.append(qb_current)
+        print("Finished at segment {} with x,y {},{} and qb of {}".format(seg_i,x[i],y[i],qb_current))
+        break
 
-    if seg_i == 0:
+    if x[i] == h/2 or x[i] == C:
+        s_current = 0
+        print("qb_current: ", qb_current)
+        qb_lastval.append(qb_current)
+        seg_i += 1
+        if seg_i == 1:
+            qb_current += qb_2_val
+        else:
+            qb_current += qb_lastval[-1]
+        print("segment ", seg_i, "with x,y", x[i], y[i-1])
+
+
+    if x[i] <= h/2 and seg_i == 0:
         y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
     elif seg_i == 1:
         y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C)
@@ -117,21 +129,43 @@ for i in range(sz):  # go through the outer section
     elif seg_i == 3:
         y[i] = -m.sqrt((h/2)**2-(x[i]-h/2)**2)
 
-    # Numerically integrate qb
-    qb_current = def_integral(func_list[seg_i][0], 0, s_list[seg_i], num_bins=100) + def_integral(func_list[seg_i][1], 0, s_list[seg_i], num_bins=100)
+    # Numerically integrate qb for each point to
+    qb_current = def_integral(func_list[seg_i][0], 0, s_current, num_bins=100) + def_integral(func_list[seg_i][1], 0, s_current, num_bins=100)
 
-    current_loc = np.array(x[i], y[i])
-    if current_loc in stiff_loc:
-        qb_current += A_stiff*y[i] + A_stiff * x[i]
-        print("stiffener added at", current_loc)
+    perimeter_old = perimeter_addition
+    perimeter_addition += m.hypot(dx, y[i]-y[i-1])
+    if perimeter_addition > spacing and perimeter_old < spacing and stiff_counter <= 10:
+        if perimeter_addition - spacing <= perimeter_old - spacing:
+            stiff_loc[stiff_counter,0] = x[i]
+            stiff_loc[stiff_counter,1] = y[i]
+            qb_current += A_stiff*(x[i] + y[i])
+            print("stiffener added at", x[i], y[i])
+        else:
+            stiff_loc[stiff_counter,0] = x[i-1]
+            stiff_loc[stiff_counter,1] = y[i-1]
+            qb_current += A_stiff*(x[i-1] + y[i-1])
+            print("stiffener added at", x[i-1], y[i-1])
+        perimeter_addition -= spacing
+        stiff_counter += 1
 
-
-    qb_val_list.append(qb_current)
+    qb_val_list[i] = qb_current
     s_current += m.hypot(dx, y[i]-y[i-1])
 
+for i in range (int((n-1)/2)):
+    stiff_loc[n-(i+1),0] = stiff_loc[i+1,0]
+    stiff_loc[n-(i+1),1] = -stiff_loc[i+1,1]
 # # shear flow at 5
 def qb_5_1(s):
     return -Vy*t_skin*(s-h/2)/I_zz
 def qb_5_2(s):
     val = -eta*Vz*t_skin/I_yy
     return np.ones_like(s) * val
+
+print(stiff_loc)
+print(qb_lastval)
+
+plt.plot(stiff_loc[:,0],stiff_loc[:,1], marker="o")
+plt.plot(x,y)
+plt.plot(x,-y)
+plt.axis('equal')
+plt.show()
