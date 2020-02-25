@@ -80,6 +80,7 @@ for i in range(sz):  # go through the outer section
     # Switch segments
     if seg_i != 0 and x[i] == 0.:
         qb_lastval.append(qb_current)
+        qb_val_list[i] = qb_current
         print("Finished at segment {} with x,y {},{} and qb of {}".format(seg_i,x[i],y[i],qb_current))
         break
 
@@ -204,42 +205,44 @@ qs_0_1 = -(qb_1*m.pi*h/4 + qb_2*h/2 + qb_5*h/2 + qb_6*m.pi*h/4)/p1
 #triangle
 p2 = h + 2*l_sk
 qs_0_2 = -(qb_3*l_sk + qb_4*l_sk + qb_2*h/2 + qb_5*h/2)/p2
-
-
+q_val_list = qb_val_list.copy()
+seg_i = 0
 for i in range(sz):  # go through the outer section
 
     # Switch segments
     if seg_i != 0 and x[i] == 0.:
+        q_val_list[i] += qs_0_1
         print("Finished at segment {} with x,y {},{} and qb of {}".format(seg_i,x[i],y[i],qb_current))
         break
 
-    if x[i] == h/2 or x[i] == C:        
-        
+    if x[i] == h/2 or x[i] == C:
         seg_i += 1
 
     if x[i] <= h/2 and seg_i == 0:
         y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
-        qb_val_list[i] += qs_0_1
+        q_val_list[i] += qs_0_1
 
     elif seg_i == 1:
         y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C)
-        qb_val_list[i] += qs_0_2
+        q_val_list[i] += qs_0_2
 
     elif seg_i == 2:
         y[i] = -(-((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C))
-        qb_val_list[i] += qs_0_2
+        q_val_list[i] += qs_0_2
 
     elif seg_i == 3:
         y[i] = -m.sqrt((h/2)**2-(x[i]-h/2)**2)
-        qb_val_list[i] += qs_0_1
+        q_val_list[i] += qs_0_1
 
+print(qb_val_list)
+print(q_val_list)
 
-
-print(stiff_loc)
+# print(stiff_loc)
 print(qb_lastval)
 
-plt.plot(stiff_loc[:,0],stiff_loc[:,1], marker="o")
-plt.plot(x,y)
-plt.plot(x,-y)
+# plt.plot(stiff_loc[:,0],stiff_loc[:,1], marker="o")
+# plt.plot(x,y)
+plt.plot(x, q_val_list)
+# plt.plot(x,-y)
 plt.axis('equal')
 plt.show()
