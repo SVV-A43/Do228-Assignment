@@ -10,8 +10,14 @@ author: lmaio
 
 
 # Imports
+import sys
+import os
 import numpy as np
 from definitions import AERO_LOADING_DATA
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
+from project.numerical.Loading.integration import def_integral
+from project.numerical.Loading.interpolation import InterpolateRBF
 
 
 # CODE...
@@ -31,7 +37,7 @@ class AileronGeometry():
         self.h    = 24.8 / 100  # [m]
         self.d_1  = 1.034 / 100 # [m]
         self.d_3  = 2.066 / 100 # [m]
-        self.z_h = self.h / 2   # [m] #TODO: Verify this is true
+        self.z_h = -1* self.h / 2   # [m] #TODO: Verify this is true
         self.y_p = self.h / 2   # [m]
         self.theta = np.deg2rad(25)         # [rad]
 
@@ -119,6 +125,48 @@ class AileronGeometry():
             e = -1
 
         return self.load_data[s:e, 0], self.load_data[s:e, 1], self.load_data[s:e, 2]
+
+    def q_tilde(self, **kwargs):
+        num_bins = kwargs.pop('num_bins', 100)
+        q_x = []
+        x_coords = []
+
+        for station in range(self.num_span_stations):
+            x, z, p = self.station_data(station)
+            int_fn = InterpolateRBF(z, p)
+            station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
+            q_x.append(station_load)
+            x_coords.append(x[0])
+        q_x = np.array(q_x)
+        x_coords = np.array(x_coords)
+
+        # Create interpolation function
+        q_tilde_x = InterpolateRBF(x_coords, q_x)
+
+        return q_tilde_x
+
+    def tau_tilde(self, **kwargs):
+        num_bins = kwargs.pop('num_bins', 100)
+        tau_x = []
+        x_coords = []
+
+        for station in range(self.num_span_stations):
+            x, z, p = self.station_data(station)
+            int_fn = InterpolateRBF(z, p)
+
+            def tau_inner_fn(z):
+                return np.multiply(int_fn.interpolate(z), np.squeeze(z - self.z_tilde))
+
+            station_load = def_integral(tau_inner_fn, min(z), max(z), num_bins=num_bins)
+            tau_x.append(station_load)
+            x_coords.append(x[0])
+        tau_x = np.array(tau_x)
+        x_coords = np.array(x_coords)
+
+        # Create interpolation function
+        tau_tilde_x = InterpolateRBF(x_coords, tau_x)
+
+        return tau_tilde_x
 
 
 

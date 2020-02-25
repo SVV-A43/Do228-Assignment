@@ -14,8 +14,6 @@ import sys
 import numpy as np
 
 # This must come before the next imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
-from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class InterpolateRBF():
@@ -105,6 +103,8 @@ class InterpolateRBF():
 
 
 def select_station(station_id):
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
+    from project.numerical.Loading.aileron_geometry import AileronGeometry
     '''
     :param station_id: station number
     :return:

@@ -13,9 +13,6 @@ import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
-from project.numerical.Loading.aileron_geometry import AileronGeometry
-from project.numerical.Loading.interpolation import InterpolateRBF
 
 def def_integral(fn, start, stop, num_var_integrals=1, **kwargs):
     num_bins = kwargs.pop('num_bins', 100)
@@ -60,6 +57,10 @@ def def_integral(fn, start, stop, num_var_integrals=1, **kwargs):
 
 
 def main():
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
+    from project.numerical.Loading.aileron_geometry import AileronGeometry
+    from project.numerical.Loading.interpolation import InterpolateRBF
+
     ail = AileronGeometry()
     # min_z = min(ail.station_z_coords())
     # max_z = max(ail.station_z_coords())
