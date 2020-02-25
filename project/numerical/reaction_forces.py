@@ -138,10 +138,10 @@ def equilibrium_eq_resultants():
     b[2, 0] = -1*def_integral(t_x.interpolate, 0, G.l_a) + (G.P * np.cos(G.theta) * G.y_p) - (G.P * np.sin(G.theta) * (G.z_h - G.z_tilde))
     b[3, 0] = -1*np.sin(G.theta) - def_integral(q_x.interpolate, 0, G.l_a)
     b[4, 0] = -1*G.P * np.cos(G.theta)
-    b[5, 0] = def_integral(q_x.interpolate, 0, G.x2, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz)
-    b[8, 0] = G.P * np.cos(G.theta) * (G.x3 - G.x_a_2)**3 / (6*G.E * G.I_yy)
-    b[9, 0] = def_integral(q_x.interpolate, 0, G.x1, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) - G.d_1
-    b[10, 0] = def_integral(q_x.interpolate, 0, G.x3, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) + G.P * np.sin(G.theta) / (6 * G.E * G.I_zz) - G.d_3
+    b[5, 0] = def_integral(q_x.interpolate, 0, G.x2, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) + G.d_1*np.sin(G.theta)
+    b[8, 0] = G.P * np.cos(G.theta) * (G.x3 - G.x_a_2)**3 / (6*G.E * G.I_yy) + G.d_3*np.sin(G.theta)
+    b[9, 0] = def_integral(q_x.interpolate, 0, G.x1, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) - G.d_1*np.cos(G.theta)
+    b[10, 0] = def_integral(q_x.interpolate, 0, G.x3, num_var_integrals=4, num_bins=20) / (G.E * G.I_zz) + G.P * np.sin(G.theta) / (6 * G.E * G.I_zz) - G.d_3*np.cos(G.theta)
 
     return -1 * b
 
@@ -160,7 +160,7 @@ def solve_reaction_forces():
                      '  C 3',
                      '  C 4']
     x = np.linalg.solve(A,b)
-    return x, r_force_names
+    return np.squeeze(x), r_force_names
 
 
 if __name__ == '__main__':
@@ -168,5 +168,5 @@ if __name__ == '__main__':
     # b = equilibrium_eq_resultants()
 
     x, names= solve_reaction_forces()
-    for val, name in zip(x[:,0], names):
+    for val, name in zip(x, names):
         print(f'{name}: {val}')

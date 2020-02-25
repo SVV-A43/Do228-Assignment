@@ -19,7 +19,8 @@ from scipy.interpolate import Rbf
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.interpolation import InterpolateRBF
 from project.numerical.Loading.integration import def_integral, def_integral
-from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants
+from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
+                                                solve_reaction_forces, q_tilde
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
@@ -226,3 +227,14 @@ class LoadingTests(unittest.TestCase):
 
         assert error1 < 0.01
         assert error2 < 0.01
+
+    def test_reaction_forces(self):
+        G = AileronGeometry()
+        r, _ = solve_reaction_forces()
+        q_x = q_tilde()
+
+        total_force_q = def_integral(q_x.interpolate, 0, G.l_a)
+
+        sum_y = sum([r[0], r[1], r[2], r[6]*np.sin(G.theta), G.P*np.sin(G.theta), -1*total_force_q])
+        sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) + G.P*np.cos(G.theta)
+        print(sum_y)
