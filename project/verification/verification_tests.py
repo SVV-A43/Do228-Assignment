@@ -44,10 +44,11 @@ class LoadingTests(unittest.TestCase):
         xi = np.linspace(0, 1, 200)
         # xi = zi = [0.5]
 
-        di = np.array([ref_interpolant(xi)]).T # interpolated values
+        di = ref_interpolant(xi) # interpolated values
         fi = my_interpolant.interpolate(xi)
 
-        assert (fi == di).all()
+        error = self.calc_error(di, fi)
+        assert max(error) < 0.01
 
         ### Cleanup
         del x, d, my_interpolant, ref_interpolant, xi, di, fi
@@ -92,7 +93,7 @@ class LoadingTests(unittest.TestCase):
         # Our integral
         num_integral = def_integral(interpolator, min(z), max(z), num_bins=1000)
 
-        error = self.calc_error(ref_integral, num_integral[0])
+        error = self.calc_error(ref_integral, num_integral)
         assert error < 0.01 # Error must be less than 1 %
 
         ### Cleanup
@@ -113,8 +114,8 @@ class LoadingTests(unittest.TestCase):
         # Our integral
         num_integral = def_integral(fn_test1, start, end, num_bins=100)
 
-        error = self.calc_error(ref_integral, num_integral[0])
-        error2 = self.calc_error(ref_sol, num_integral[0])
+        error = self.calc_error(ref_integral, num_integral)
+        error2 = self.calc_error(ref_sol, num_integral)
         assert error < 0.001  # Error must be less than 0.1 %
         assert error2 < 0.001
 
@@ -204,12 +205,14 @@ class LoadingTests(unittest.TestCase):
         assert error1 < 0.01
         assert error2 < 0.01
 
+
     def test_equilibrium_resultants(self):
-        G = AileronGeometry
+        G = AileronGeometry()
         b = equilibrium_eq_resultants()
 
-        ref_b_4 = -18669
-        ref_b_8 = 0.00235
+        ref_b_4 = 18669
+        ref_b_8 = -1* G.P*np.cos(G.theta)*(G.x3 - G.x_a_2)**3 / (6*G.E*G.I_yy)
+        ref_b_8_manual = -0.001180
 
         b_4 = b[4, 0]
         b_8 = b[8, 0]

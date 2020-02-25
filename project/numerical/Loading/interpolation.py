@@ -63,7 +63,7 @@ class InterpolateRBF():
         '''
         if self._basis == 'linear':
             return r
-
+        # Only linear RBF implemented for now
         raise NotImplementedError
 
     def _compute_coeffs(self):
@@ -85,41 +85,23 @@ class InterpolateRBF():
 
     def interpolate(self, input_coords):
         '''ONE VARIABLE ONLY'''
-
-
         if isinstance(input_coords, (float, int)):
             input_coords = [input_coords]
-        coords_in = np.asarray(input_coords) # Each set of pts_in is
+        coords = np.asarray(input_coords)
 
-        if coords_in.ndim == 1:
-            coords_in = np.array([coords_in]).T
+        if coords.ndim == 1:
+            coords = np.array([coords]).T # Input coords along axis0
 
-        num_coords_sets = coords_in.shape[1]
-        num_coords = coords_in.shape[0]
+        def euclidean_norm_1d(x): # Calculate distance to known coords, using only first axis
+            return np.sqrt((x.T - self._known_coords.T)**2)
 
-        num_interpolant_terms = self.coefficients.shape[1] # Number of terms in the final interpolant
+        # Calc matrix phi, using only first axis (most recent added by integral fn)
+        phi_r = np.apply_along_axis(euclidean_norm_1d, 0, coords)
 
-        self.phi_x = np.zeros((num_coords_sets, num_coords, num_interpolant_terms)) # Basis terms
+        # Calculate dot product using the first axis of both matrices
+        interp_pts = np.tensordot(np.squeeze(self.coefficients), np.squeeze(phi_r), axes=([0],[0]))
 
-        # Transpose known_coords for proper matrix operation
-        knwn_coords = self._known_coords.T
-
-        # Calculate RBF matrix for each set of
-        # ONE VARIABLE INTERPOLATOR ONLY
-
-        # FIXME: Needs to be vectorized, so input of 4d array returns 4d values
-
-        for s in range(num_coords_sets):
-            for i in range(num_coords):
-                for j in range(num_interpolant_terms):
-                    r = self._dist_r(coords_in[i, s], knwn_coords[j, 0])
-                    self.phi_x[s, i, j] = self._phi(r)
-
-        F = np.zeros((num_coords, num_coords_sets))
-        for s in range(num_coords_sets):
-            F[:, s] = np.squeeze(np.dot(self.phi_x[s, :, :], self.coefficients.T)[:, 0])
-
-        return F
+        return interp_pts
 
 
 def select_station(station_id):
@@ -148,5 +130,4 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()

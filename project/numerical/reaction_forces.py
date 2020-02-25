@@ -53,7 +53,7 @@ def tau_tilde(**kwargs):
         int_fn = InterpolateRBF(z, p)
 
         def tau_inner_fn(z):
-            return int_fn.interpolate(z) * (z - G.z_tilde)
+            return np.multiply(int_fn.interpolate(z), np.squeeze(z - G.z_tilde))
 
         station_load = def_integral(tau_inner_fn, min(z), max(z), num_bins=num_bins)
         tau_x.append(station_load)
@@ -135,15 +135,15 @@ def equilibrium_eq_resultants():
     q_x = q_tilde()
     t_x = tau_tilde()
 
-    # b[0, 0] = variable_integral(q_x.interpolate, 0, G.l_a) + (G.P * np.sin(G.theta)*(G.l_a - G.x_a_2))
-    # b[1, 0] = G.P * np.cos(G.theta) * (G.l_a - G.x_a_2)
-    # b[2, 0] = -1*def_integral(t_x.interpolate, 0, G.l_a) + (G.P * np.cos(G.theta) * G.y_p) - (G.P * np.sin(G.theta) * (G.z_h - G.z_tilde))
-    # b[3, 0] = -1*np.sin(G.theta) - def_integral(q_x.interpolate, 0, G.l_a)
-    # b[4, 0] = -1*G.P * np.cos(G.theta)
-    b[5, 0] = variable_integral(q_x.interpolate, 0, G.x2, num_var_integrals=3, num_bins=41) / (G.E * G.I_zz)
+    b[0, 0] = variable_integral(q_x.interpolate, 0, G.l_a) + (G.P * np.sin(G.theta)*(G.l_a - G.x_a_2))
+    b[1, 0] = G.P * np.cos(G.theta) * (G.l_a - G.x_a_2)
+    b[2, 0] = -1*def_integral(t_x.interpolate, 0, G.l_a) + (G.P * np.cos(G.theta) * G.y_p) - (G.P * np.sin(G.theta) * (G.z_h - G.z_tilde))
+    b[3, 0] = -1*np.sin(G.theta) - def_integral(q_x.interpolate, 0, G.l_a)
+    b[4, 0] = -1*G.P * np.cos(G.theta)
+    b[5, 0] = variable_integral(q_x.interpolate, 0, G.x2, num_var_integrals=3, num_bins=20) / (G.E * G.I_zz)
     b[8, 0] = G.P * np.cos(G.theta) * (G.x3 - G.x_a_2)**3 / (6*G.E * G.I_yy)
-    b[9, 0] = variable_integral(q_x.interpolate, 0, G.x1, num_var_integrals=3) / (G.E * G.I_zz) - G.d_1
-    b[10, 0] = variable_integral(q_x.interpolate, 0, G.x3, num_var_integrals=3) / (G.E * G.I_zz) + G.P*np.sin(G.theta)/(6*G.E*G.I_zz) - G.d_3
+    b[9, 0] = variable_integral(q_x.interpolate, 0, G.x1, num_var_integrals=3, num_bins=20) / (G.E * G.I_zz) - G.d_1
+    b[10, 0] = variable_integral(q_x.interpolate, 0, G.x3, num_var_integrals=3, num_bins=20) / (G.E * G.I_zz) + G.P*np.sin(G.theta)/(6*G.E*G.I_zz) - G.d_3
 
     return -1 * b
 
@@ -153,3 +153,4 @@ def equilibrium_eq_resultants():
 if __name__ == '__main__':
     A = equilibrium_eq_coefficients()
     b = equilibrium_eq_resultants()
+    print(b)
