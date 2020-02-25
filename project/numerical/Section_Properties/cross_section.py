@@ -125,6 +125,6 @@ print("perimeter =", perimeter)
 print(stiff_loc)
 print(A_total)
 print(x_centroid)
-print(Ixx)
-print(Iyy)
+print(f'Ixx: {Ixx}')
+print(f'Iyy: {Iyy}')
 

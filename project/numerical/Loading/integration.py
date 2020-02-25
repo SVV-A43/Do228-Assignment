@@ -12,22 +12,14 @@ import os
 import sys
 
 import numpy as np
-from tqdm import tqdm
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))  # This must come before the next imports
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.interpolation import InterpolateRBF
 
+def def_integral(fn, start, stop, num_var_integrals=1, **kwargs):
+    num_bins = kwargs.pop('num_bins', 100)
 
-def def_integral(fn, start, stop, num_bins=100):
-    '''
-    Definite numerical integration of a 1 variable function
-    :param start: start coordinate
-    :param stop: end coordinate
-    :param num_bins: number of bins to use
-    :param fn: function of a single variable
-    :return:
-    '''
     if isinstance(start, (float, int)):
         start_ar = np.array([start])
     else:
@@ -36,46 +28,33 @@ def def_integral(fn, start, stop, num_bins=100):
         stop_ar = np.array([stop])
     else:
         stop_ar = stop
+
     del start, stop
 
-    steps = np.linspace(start_ar, stop_ar, num_bins, axis=0) # Need to find integral of each column
-    width = steps[1, :] - steps[0, :] # Uniform bin width
+    # New axis is added to the front (axis0)
+    steps, step_width = np.linspace(start_ar, stop_ar, num_bins, axis=0, retstep=True) # Need to find integral of each column (axis0)
+
+    s_diff = np.diff(steps, axis=0)
+    width = np.take(s_diff, 0, axis=0)  # Take slice along axis 0 of the widths
+    if width.ndim == 1:
+        width = np.array([width]) # Make 2D array
 
     if steps.ndim > 2:
         steps = np.squeeze(steps)  # Remove extra dimensions with shape 1
 
-    # Interpolating function needs to output a column of values, for each input column of coordinates (from steps)
-    step_vals_ar = fn(steps)
-
-    areas_ar = np.multiply((step_vals_ar[:-1, :] + step_vals_ar[1:, :]) / 2, width)
-    return areas_ar.sum(axis=0)
-
-
-def variable_integral(fn, start, stop, num_var_integrals=1, **kwargs):
-    num_bins = kwargs.pop('num_bins', 100)
-    if isinstance(start, (float, int)):
-        start_ar = np.array([start])
+    if num_var_integrals > 1:
+        data = def_integral(fn, start_ar, steps, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
     else:
-        start_ar = start
-    if isinstance(stop, (float, int)):
-        stop_ar = np.array([stop])
-    else:
-        stop_ar = stop
+        data = fn(steps)
 
-    del start, stop
+    # areas along axis 0
+    def trapz(vals):
+        return (vals[:-1] + vals[1:]) / 2
 
-    steps = np.linspace(start_ar, stop_ar, num_bins) # Need to find integral of each column
-    width = steps[1, :] - steps[0, :] # Uniform bin width
-
-    steps = np.squeeze(steps) # Remove extra dimensions with shape 1
-
-    if num_var_integrals == 1:
-        data = def_integral(fn, start_ar, steps, num_bins=num_bins)
-    else:
-        data = variable_integral(fn, start_ar, steps.T, num_var_integrals=num_var_integrals - 1, num_bins=num_bins)
-
-    data_areas = np.multiply((data[:-1] + data[1:]) / 2, width)
-    return data_areas.sum(axis=0)
+    trap_h = np.apply_along_axis(trapz, 0, data)    # Calc trapezoid heights
+    areas = trap_h * width.T                        # Calc trapezoid areas
+    areas = np.squeeze(areas)                       # Reduce dimensions to minimum (needed for next line)
+    return areas.sum(axis=0)
 
 
 
@@ -91,7 +70,7 @@ def main():
 
     int_fn = InterpolateRBF(z, p)
 
-    second_int = variable_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
+    second_int = def_integral(int_fn.interpolate, 0, -0.5, num_bins=10)
     print(second_int)
 
 if __name__ == '__main__':

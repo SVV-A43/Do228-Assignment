@@ -34,12 +34,10 @@ eta = 0.1
 # define qb_segment#_1 as Vy and  qbsegment#_2 as Vz
 # Shear flow 2
 
-
 def qb_2_1(s):
-    return -s*Vy*t_skin/I_zz
+    return -s*Vy*t_spar/I_zz
 def qb_2_2(s):
-    val = -eta*Vz*t_skin/I_yy
-    return np.ones_like(s) * val
+    return  np.array([[-eta*Vz*t_spar/I_yy]])
 
 
 qb_2_val = def_integral(qb_2_1, 0, 1, num_bins=100) + def_integral(qb_2_2, 0, 1, num_bins=100)
@@ -156,10 +154,38 @@ for i in range (int((n-1)/2)):
     stiff_loc[n-(i+1),1] = -stiff_loc[i+1,1]
 # # shear flow at 5
 def qb_5_1(s):
-    return -Vy*t_skin*(s-h/2)/I_zz
+    return -Vy*t_spar*s/I_zz
 def qb_5_2(s):
-    val = -eta*Vz*t_skin/I_yy
+    val = -eta*Vz*t_spar/I_yy
     return np.ones_like(s) * val
+
+
+theta = m.asin((h/2)/l_sk)
+
+qb_1_h = qb_1 / 2
+qb_1_v = qb_1 / 2
+
+qb_2_h = 0
+qb_2_v = qb_2
+
+qb_3_h = qb_3 * m.cos(theta)
+qb_3_v = qb_3 * m.sin(theta)
+
+qb_4_h = qb_3 * m.cos(theta)
+qb_4_v = qb_3 * m.sin(theta)
+
+qb_5_h = 0
+qb_5_v = qb_5
+
+qb_6_h = qb_6 / 2
+qb_6_v = qb_6 / 2
+
+M_b_1 = (C+h/2) * qb_1_v
+M_b_2 = eta * qb_2_v
+M_b_3 = h/2 * qb_3_h + (C-h/2) * -qb_3_v
+M_b_4 = 0
+M_b_5 = eta * qb_5_v
+M_b_6 = h/2 * qb_6_h + (C-h/2) * qb_6_v
 
 print(stiff_loc)
 print(qb_lastval)

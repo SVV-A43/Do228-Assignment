@@ -20,14 +20,19 @@ from definitions import AERO_LOADING_DATA
 class AileronGeometry():
     def __init__(self, filename=AERO_LOADING_DATA):
         self.C_a  = 0.515       # [m]
-        self.l_a  = 2.961       # [m]
+        self.l_a  = 2.691       # [m]
         self.x1   = 0.174       # [m]
         self.x2   = 1.051       # [m]
         self.x3   = 2.512       # [m]
         self.x_a  = 30.0 / 100  # [m]
+        self.x_a_1 = self.x2 - self.x_a / 2     # [m]
+        self.x_a_2 = self.x2 + self.x_a / 2     # [m]
+        self.z_tilde = -0.35375    # [m] distance to shear center #FIXME: THIS IS FROM VERIFICATION MODEL
         self.h    = 24.8 / 100  # [m]
         self.d_1  = 1.034 / 100 # [m]
-        self.d_2  = 2.066 / 100 # [m]
+        self.d_3  = 2.066 / 100 # [m]
+        self.z_h = self.h / 2   # [m] #TODO: Verify this is true
+        self.y_p = self.h / 2   # [m]
         self.theta = np.deg2rad(25)         # [rad]
 
         self.t_sk = 1.1         # [mm]
@@ -37,10 +42,12 @@ class AileronGeometry():
         self.w_st = 3.0 * 10    # [mm]
         self.n_st = 11          # [-]
         self.I_xx = None
-        self.I_yy = None
-        self.I_zz = None
-        self.z_sc = None        # [m] z_tilde in equilibrium equations
+        self.I_yy = 5.643650631210155e-05  # [m^4]
+        self.I_zz = 1.4221372629975417e-05 # [m^4]
 
+        ### Constants:
+        self.E = 73.1 * 10**9       # [Pa]
+        self.P = 20.6 * 10 ** 3     # [N]
 
         self.__pressure = np.genfromtxt(filename, delimiter=',')
         self.num_span_stations = len(self.__pressure[0, :])

@@ -18,7 +18,9 @@ from scipy.interpolate import Rbf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.interpolation import InterpolateRBF
-from project.numerical.Loading.integration import def_integral, variable_integral
+from project.numerical.Loading.integration import def_integral, def_integral
+from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants
+from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class LoadingTests(unittest.TestCase):
@@ -42,10 +44,11 @@ class LoadingTests(unittest.TestCase):
         xi = np.linspace(0, 1, 200)
         # xi = zi = [0.5]
 
-        di = np.array([ref_interpolant(xi)]).T # interpolated values
+        di = ref_interpolant(xi) # interpolated values
         fi = my_interpolant.interpolate(xi)
 
-        assert (fi == di).all()
+        error = self.calc_error(di, fi)
+        assert max(error) < 0.01
 
         ### Cleanup
         del x, d, my_interpolant, ref_interpolant, xi, di, fi
@@ -90,7 +93,7 @@ class LoadingTests(unittest.TestCase):
         # Our integral
         num_integral = def_integral(interpolator, min(z), max(z), num_bins=1000)
 
-        error = self.calc_error(ref_integral, num_integral[0])
+        error = self.calc_error(ref_integral, num_integral)
         assert error < 0.01 # Error must be less than 1 %
 
         ### Cleanup
@@ -111,8 +114,8 @@ class LoadingTests(unittest.TestCase):
         # Our integral
         num_integral = def_integral(fn_test1, start, end, num_bins=100)
 
-        error = self.calc_error(ref_integral, num_integral[0])
-        error2 = self.calc_error(ref_sol, num_integral[0])
+        error = self.calc_error(ref_integral, num_integral)
+        error2 = self.calc_error(ref_sol, num_integral)
         assert error < 0.001  # Error must be less than 0.1 %
         assert error2 < 0.001
 
@@ -136,8 +139,8 @@ class LoadingTests(unittest.TestCase):
         manual_solution1 = 4
         manual_solution2 = 7.3333333333333333
 
-        num_doub_int1 = variable_integral(fn_test1, start, end, num_bins=1000)
-        num_doub_int2 = variable_integral(fn_test2, start, end, num_bins=1000)
+        num_doub_int1 = def_integral(fn_test1, start, end, num_var_integrals=2, num_bins=100)
+        num_doub_int2 = def_integral(fn_test2, start, end, num_var_integrals=2, num_bins=100)
 
         error1 = self.calc_error(manual_solution1, num_doub_int1)
         error2 = self.calc_error(manual_solution2, num_doub_int2)
@@ -159,30 +162,67 @@ class LoadingTests(unittest.TestCase):
         end = 2
 
         # n=1 means once variable integral
-        # def integral:     # 3/2 * x**2
-        ref_sol_n_1 = 4     # 1/2 * x**3
-        ref_sol_n_2 = 2     # 1/8 * x**4
-        ref_sol_n_3 = 0.8   # 1/40 * x**5
-        ref_sol_n_4 = 0.2666666      # 1/240 * x**6
+        ref_sol_n_1 = 6     # 3/2 * x**2
+        ref_sol_n_2 = 4     # 1/2 * x**3
+        ref_sol_n_3 = 2     # 1/8 * x**4
+        ref_sol_n_4 = 0.8   # 1/40 * x**5
+        ref_sol_n_5 = 0.2666666      # 1/240 * x**6
 
-        num_sol_n_1 = variable_integral(fn_test, start, end, num_var_integrals=1, num_bins=100)
-        num_sol_n_2 = variable_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
-        num_sol_n_3 = variable_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
+        num_sol_n_1 = def_integral(fn_test, start, end, num_var_integrals=1, num_bins=100)
+        num_sol_n_2 = def_integral(fn_test, start, end, num_var_integrals=2, num_bins=100)
+        num_sol_n_3 = def_integral(fn_test, start, end, num_var_integrals=3, num_bins=100)
+        num_sol_n_4 = def_integral(fn_test, start, end, num_var_integrals=4, num_bins=40)
         # Lower resolution due to memory restrictions (LONG RUNTIME > 1min):
-        #num_sol_n_4 = indef_integral(fn_test, start, end, num_var_integrals=4, num_bins=50)
+        num_sol_n_5 = def_integral(fn_test, start, end, num_var_integrals=5, num_bins=40)
 
 
         error1 = self.calc_error(ref_sol_n_1, num_sol_n_1)
         error2 = self.calc_error(ref_sol_n_2, num_sol_n_2)
         error3 = self.calc_error(ref_sol_n_3, num_sol_n_3)
-        #error4 = self.calc_error(ref_sol_n_4, num_sol_n_4)
+        error4 = self.calc_error(ref_sol_n_4, num_sol_n_4)
+        error5 = self.calc_error(ref_sol_n_5, num_sol_n_5)
 
         # Error must be less than 1 %
         assert error1 < 0.01
         assert error2 < 0.01
         assert error3 < 0.01
-        #assert error4 < 0.01
+        assert error4 < 0.01
+        assert error5 < 0.01
 
         # Cleanup
-        del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3, ref_sol_n_4, \
-            num_sol_n_1, num_sol_n_2, num_sol_n_3, error2, error3
+        del start, end, ref_sol_n_1, ref_sol_n_2, ref_sol_n_3, ref_sol_n_4, ref_sol_n_5, \
+            num_sol_n_1, num_sol_n_2, num_sol_n_3, num_sol_n_4, num_sol_n_5, \
+            error1, error2, error3, error4, error5
+
+    def test_equilibrium_coefficients(self):
+        A = equilibrium_eq_coefficients()
+
+        ref_A_0_1 = -1.64
+        ref_A_10_1 = -4.99966 * 10**-7
+
+        A_0_1 = A[0, 1]
+        A_10_1 = A[10, 1]
+
+        error1 = self.calc_error(ref_A_0_1, A_0_1)
+        error2 = self.calc_error(ref_A_10_1, A_10_1)
+
+        assert error1 < 0.01
+        assert error2 < 0.01
+
+
+    def test_equilibrium_resultants(self):
+        G = AileronGeometry()
+        b = equilibrium_eq_resultants()
+
+        ref_b_4 = 18669
+        ref_b_8 = -1* G.P*np.cos(G.theta)*(G.x3 - G.x_a_2)**3 / (6*G.E*G.I_yy)
+        ref_b_8_manual = -0.001180
+
+        b_4 = b[4, 0]
+        b_8 = b[8, 0]
+
+        error1 = self.calc_error(ref_b_4, b_4)
+        error2 = self.calc_error(ref_b_8, b_8)
+
+        assert error1 < 0.01
+        assert error2 < 0.01
