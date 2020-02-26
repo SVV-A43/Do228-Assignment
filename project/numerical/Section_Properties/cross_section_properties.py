@@ -42,13 +42,13 @@ class Cross_section_properties:
         self.x_centroid = self.centroid()
 
         perimeters = self.perimeters()
-        l_sk_triangle, l_halfcircle, l_spar = perimeters
+        self.l_sk_triangle, self.l_halfcircle, self.l_spar = perimeters
 
         self.I_zz = self.moment_of_inertia()[0]
         self.I_yy = self.moment_of_inertia()[1]
 
-        J1 = 4*self.Am1/((m.pi*self.h/2/self.t_skin) + (self.h/self.t_spar))
-        J2 = 4*self.Am2/((2*self.l_sk_triangle/self.t_skin) + (self.h/self.t_spar))
+        J1 = (4*self.Am1**2)/((m.pi*self.h/2/self.t_skin) + 0.5*(self.h/self.t_spar))
+        J2 = (4*self.Am2**2)/((2*self.l_sk_triangle/self.t_skin) + 0.5*(self.h/self.t_spar))
         self.J = J1+J2
 
     def generate_geometry(self):
