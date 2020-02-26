@@ -32,27 +32,28 @@ class Cross_section_properties:
         self.t_spar = 0.0022
         self.dx = 0.0001
 
-        geo = self.generate_geometry()
-        self.x = geo[0]
-        self.y = geo[1]
-        self.stiff_loc = geo[2]
-
         areas = self.areas()
         self.A_stiff, self.A_total, self.Am1, self.Am2 = areas
         self.x_centroid = self.centroid()
 
         perimeters = self.perimeters()
-        self.l_sk_triangle, self.l_halfcircle, self.l_spar = perimeters
+        self.l_sk_triangle, self.l_halfcircle, self.l_spar, self.total_perimeter = perimeters
+
+        geo = self.generate_geometry()
+        self.x = geo[0]
+        self.y = geo[1]
+        self.stiff_loc = geo[2]
 
         self.I_zz = self.moment_of_inertia()[0]
         self.I_yy = self.moment_of_inertia()[1]
 
-        J1 = (4*self.Am1**2)/((m.pi*self.h/2/self.t_skin) + 0.5*(self.h/self.t_spar))
-        J2 = (4*self.Am2**2)/((2*self.l_sk_triangle/self.t_skin) + 0.5*(self.h/self.t_spar))
+        J1 = (4*self.Am1**2)/(((m.pi*self.h/2)/self.t_skin) + (self.h/(0.5*self.t_spar)))
+        J2 = (4*self.Am2**2)/((2*self.l_sk_triangle/self.t_skin) + (self.h/(0.5*self.t_spar)))
         self.J = J1+J2
 
     def generate_geometry(self):
-        x = np.arange(0, self.C + self.dx,self.dx)
+        x = np.arange(0, self.C+self.dx,self.dx)
+        x = np.append(x, x[-2::-1])
         sz = np.size(x)
         y = np.zeros(sz)
         stiff_loc = np.zeros((self.n,2))
@@ -64,11 +65,27 @@ class Cross_section_properties:
         spacing = perimeter / self.n
         perimeter_addition = 0
         perimeter_check = 0
+        seg_i = 0
         for i in range(sz):
-            if x[i] <= self.h /2:
-                y[i] = m.sqrt((self.h / 2) ** 2 - (x[i] - self.h / 2) ** 2)
-            else:
-                y[i] = -((self.h / 2) / (self.C - self.h / 2)) * x[i] + (((self.h / 2) / (self.C - self.h / 2)) * self.C)
+            # Switch segments
+            if seg_i != 0 and x[i] == 0.:
+                break
+
+            if x[i] == self.h/2 or x[i] == self.C:
+                s_current = 0
+                seg_i += 1
+
+            if x[i] <= self.h/2 and seg_i == 0:
+                y[i] = m.sqrt((self.h/2)**2-(x[i]-self.h/2)**2)
+
+            elif seg_i == 1:
+                y[i] = -((self.h/2)/(self.C-self.h/2))*x[i] + (((self.h/2)/(self.C-self.h/2))*self.C)
+
+            elif seg_i == 2:
+                y[i] = -(-((self.h/2)/(self.C-self.h/2))*x[i] + (((self.h/2)/(self.C-self.h/2))*self.C))
+
+            elif seg_i == 3:
+                y[i] = -m.sqrt((self.h/2)**2-(x[i]-self.h/2)**2)
 
             perimeter_old = perimeter_addition
             perimeter_addition += m.hypot(self.dx, y[i]-y[i-1])
@@ -86,7 +103,7 @@ class Cross_section_properties:
         for i in range (int((self.n-1)/2)):
             stiff_loc[self.n-(i+1),0] = stiff_loc[i+1,0]
             stiff_loc[self.n-(i+1),1] = -stiff_loc[i+1,1]
-        return x,y,stiff_loc
+        return x,y,stiff_loc, perimeter_check
 
     def areas(self):
         a_stiff = self.w_st*self.t_st + self.h_st*self.t_st
@@ -99,7 +116,8 @@ class Cross_section_properties:
         l_sk_triangle = m.hypot(self.C-self.h/2,self.h/2)
         l_halfcircle = (2*m.pi*self.h/2)/2
         l_spar = self.h
-        return l_sk_triangle, l_halfcircle, l_spar
+        total_perimeter = m.pi*(self.h/2) + 2*m.sqrt((self.h/2)**2+(self.C-self.h/2)**2)
+        return l_sk_triangle, l_halfcircle, l_spar, total_perimeter
 
     def centroid(self):
 
@@ -112,6 +130,7 @@ class Cross_section_properties:
 
         x_centroid = (stiff_cont+spar_cont+semi_cont+straight_cont)/self.areas()[1]
         return x_centroid
+
     def moment_of_inertia(self):
 
         # Ixx
@@ -149,4 +168,11 @@ class Cross_section_properties:
 
 if __name__ == '__main__':
     props = Cross_section_properties()
+    plot = True
+    if plot:
+        plt.plot(props.stiff_loc[:,0],props.stiff_loc[:,1], marker="o")
+        plt.plot(props.x,props.y)
+        plt.plot(props.x_centroid,0, marker="o")
+        plt.axis('equal')
+        plt.show()
 
