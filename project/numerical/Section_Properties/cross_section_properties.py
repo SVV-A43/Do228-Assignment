@@ -41,8 +41,15 @@ class Cross_section_properties:
         self.A_stiff, self.A_total, self.Am1, self.Am2 = areas
         self.x_centroid = self.centroid()
 
+        perimeters = self.perimeters()
+        l_sk_triangle, l_halfcircle, l_spar = perimeters
+
         self.I_zz = self.moment_of_inertia()[0]
         self.I_yy = self.moment_of_inertia()[1]
+
+        J1 = 4*self.Am1/((m.pi*self.h/2/self.t_skin) + (self.h/self.t_spar))
+        J2 = 4*self.Am2/((2*self.l_sk_triangle/self.t_skin) + (self.h/self.t_spar))
+        self.J = J1+J2
 
     def generate_geometry(self):
         x = np.arange(0, self.C + self.dx,self.dx)
@@ -87,6 +94,12 @@ class Cross_section_properties:
         am1 = 0.5* m.pi*(self.h/2)**2
         am2 = 0.5 * (self.C-self.h/2)*self.h
         return a_stiff, a_total, am1, am2
+
+    def perimeters(self):
+        l_sk_triangle = m.hypot(self.C-self.h/2,self.h/2)
+        l_halfcircle = (2*m.pi*self.h/2)/2
+        l_spar = self.h
+        return l_sk_triangle, l_halfcircle, l_spar
 
     def centroid(self):
 
