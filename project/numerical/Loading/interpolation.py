@@ -128,6 +128,66 @@ def main():
     di = my_inter.interpolate(xi)
     print(di)
 
+def plot_chordwise_interpolate():
+    aileron = AileronGeometry()
+    station = 20
+    x, z, p = aileron.station_data(station)
+
+    station_fn = InterpolateRBF(z, p)
+    zi = np.linspace(min(z), max(z), 100)
+    pi = station_fn.interpolate(zi)
+
+    plt.scatter(z, p, color='green', label='Raw pressure data')
+    plt.plot(zi, pi, color='red', label='Interpolating function')
+    plt.ylabel('Pressure [N/m^2]')
+    plt.xlabel('z-coordinate (along chord) [m]')
+    plt.title(f'Interpolating function at spanwise station {station}, (x={np.round(x[0], 2)})')
+    plt.legend()
+
+    plt.show()
+
+def plot_spanwise_interpolate():
+    aileron = AileronGeometry()
+    x = aileron.station_x_coords()
+    q_x_fn = aileron.q_tilde()
+    qx = aileron.q_x
+
+    station_fn = InterpolateRBF(x, qx)
+    xi = np.linspace(min(x), max(x), 150)
+    qi = station_fn.interpolate(xi)
+
+    plt.scatter(x, qx, color='green', label='Pressure data per station')
+    plt.plot(xi, qi, color='red', label='Interpolating function')
+    plt.ylabel('Pressure per station [N/m]')
+    plt.xlabel('x-coordinate (along span) [m]')
+    plt.title(f'Aerodynamic Load per Spanwise Station')
+    plt.legend()
+
+    plt.show()
+
+def plot_aerotorque_interpolate():
+    aileron = AileronGeometry()
+    x = aileron.station_x_coords()
+    t_x_fn = aileron.tau_tilde()
+    tx = aileron.tau_x
+
+    station_fn = InterpolateRBF(x, tx)
+    xi = np.linspace(min(x), max(x), 150)
+    ti = station_fn.interpolate(xi)
+
+    plt.scatter(x, tx, color='green', label='Distributed torque raw data')
+    plt.plot(xi, ti, color='red', label='Interpolating function')
+    plt.ylabel('Distributed torque [Nm/m]')
+    plt.xlabel('x-coordinate (along span) [m]')
+    plt.title(f'Distribution of Torque caused by Aerodynamic Loads')
+    plt.legend()
+
+    plt.show()
 
 if __name__ == '__main__':
-    main()
+    from project.numerical.Loading.aileron_geometry import AileronGeometry
+    from matplotlib import pyplot as plt
+    # plot_chordwise_interpolate()
+    # plot_spanwise_interpolate()
+    plot_aerotorque_interpolate()
+    # main()

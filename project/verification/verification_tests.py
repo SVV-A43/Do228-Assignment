@@ -22,7 +22,7 @@ from project.numerical.Loading.interpolation import InterpolateRBF
 from project.numerical.Loading.integration import def_integral, def_integral
 from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
                                                 reaction_forces
-from project.numerical.deflection import deflection_y
+from project.numerical.deformations import deflection_y
 
 
 
@@ -48,7 +48,6 @@ class LoadingTests(unittest.TestCase):
 
         # Generate points to test
         xi = np.linspace(0, 1, 200)
-        # xi = zi = [0.5]
 
         di = ref_interpolant(xi) # interpolated values
         fi = my_interpolant.interpolate(xi)
@@ -60,9 +59,9 @@ class LoadingTests(unittest.TestCase):
         del x, d, my_interpolant, ref_interpolant, xi, di, fi
 
 
-    # Our RBF Interpolant is currently developed to handle ONLY multiple 1D datasets,
+    # Our RBF Interpolant is currently developed to handle ONLY uni-variate datasets,
     #       rather than bi-variate data. This would be a potential future update
-    #       This test is written for a previous version of the function where that did work
+    #       This test is written for a previous version of the function where bi-variate data did work
     @unittest.expectedFailure
     def test_bi_variate_linear_RBF(self):
         # Create random data to generate interpolation functions on
@@ -243,7 +242,9 @@ class LoadingTests(unittest.TestCase):
 
         sum_y = r[0] + r[1] + r[2] + r[6]*np.sin(G.theta) - G.P*np.sin(G.theta) + -1*total_force_q
         sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) - G.P*np.cos(G.theta)
-        print(sum_y)
+        print()
+        print(f'Sum forces y: {sum_y}')
+        print(f'Sum forces z: {sum_z}')
 
         # Should be very close to zero
         assert sum_y < 0.001

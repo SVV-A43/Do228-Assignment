@@ -25,53 +25,54 @@ def equilibrium_eq_coefficients():
 
     a = np.zeros((11,11))
 
+    # Mz(la)
     a[0, 0] = (G.l_a - G.x1)
     a[0, 1] = (G.l_a - G.x2)
     a[0, 2] = (G.l_a - G.x3)
     a[0, 6] = np.sin(G.theta)*(G.l_a - G.x_a_1)
-
+    # My(la)
     a[1, 3] = -(G.l_a - G.x1)
     a[1, 4] = -(G.l_a - G.x2)
     a[1, 5] = -(G.l_a - G.x3)
     a[1, 6] = -1*np.cos(G.theta)*(G.l_a - G.x_a_1)
-
+    # Tx(la)
     a[2, 0] = (G.z_h - G.z_tilde)
     a[2, 1] = (G.z_h - G.z_tilde)
     a[2, 2] = (G.z_h - G.z_tilde)
     a[2, 6] = np.sin(G.theta)*(0 - G.z_tilde) - np.cos(G.theta)*(G.y_p)
-
+    # Sum Fy
     a[3, 0] = 1
     a[3, 1] = 1
     a[3, 2] = 1
     a[3, 6] = np.sin(G.theta)
-
+    # Sum Fz
     a[4, 3] = 1
     a[4, 4] = 1
     a[4, 5] = 1
     a[4, 6] = np.cos(G.theta)
-
+    # v(x2)
     a[5, 0] = -1*(G.x2 - G.x1)**3 / (6 * G.E * G.I_zz)
     a[5, 6] = -1*(np.sin(G.theta) * (G.x2 - G.x_a_1)**3) / (6 * G.E * G.I_zz)
     a[5, 7] = G.x2
     a[5, 8] = 1
-
+    # w(x2)
     a[6, 3] = (G.x2 - G.x1)**3 / (6*G.E*G.I_yy)
     a[6, 6] = (np.cos(G.theta) * (G.x2 - G.x_a_1)**3) / (6 * G.E * G.I_yy)
     a[6, 9] = G.x2
     a[6, 10] = 1
-
+    # w(x1)
     a[7, 9] = G.x1
     a[7, 10] = 1
-
+    # w(x3)
     a[8, 3] = (G.x3 - G.x1)**3 / (6*G.E*G.I_yy)
     a[8, 4] = (G.x3 - G.x2)**3 / (6*G.E*G.I_yy)
     a[8, 6] = (np.cos(G.theta) * (G.x3 - G.x_a_1)**3) / (6 * G.E * G.I_yy)
     a[8, 9] = G.x3
     a[8, 10] = 1
-
+    # v(x1)
     a[9, 7] = G.x1
     a[9, 8] = 1
-
+    # v(x3)
     a[10, 0] = -1*(G.x3 - G.x1)**3 / (6*G.E*G.I_zz)
     a[10, 1] = -1*(G.x3 - G.x2)**3 / (6*G.E*G.I_zz)
     a[10, 6] = -1*(np.sin(G.theta) * (G.x3 - G.x_a_1)**3) / (6 * G.E * G.I_zz)
@@ -131,4 +132,4 @@ if __name__ == '__main__':
         print(f'{name}: {val}')
 
     sumy = x[0] + x[1] + x[2] -  def_integral(G.q_tilde(),0, G.l_a)
-    print(sumy)
+    # print(sumy)
