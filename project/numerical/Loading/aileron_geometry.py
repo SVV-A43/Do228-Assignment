@@ -53,7 +53,10 @@ class AileronGeometry():
         self.I_xx = None
         self.I_yy = 5.643650631210155e-05  # [m^4]
         self.I_zz = 1.4221372629975417e-05 # [m^4]
+
         self.J = 0.00020500801555445113
+        self.J_polar = self.I_yy + self.I_zz # [m^4]
+
 
         ### Constants:
         self.E = 73.1 * 10**9       # [Pa]
