@@ -79,6 +79,8 @@ def equilibrium_eq_coefficients():
     a[10, 7] = G.x3
     a[10, 8] = 1
 
+
+
     return a
 
 def equilibrium_eq_resultants():
