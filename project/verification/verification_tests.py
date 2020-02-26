@@ -13,13 +13,10 @@ import sys
 import unittest
 
 import numpy as np
-from scipy.integrate import quad
-from scipy.interpolate import Rbf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.aileron_geometry import AileronGeometry
-from project.numerical.Loading.interpolation import InterpolateRBF
-from project.numerical.Loading.integration import def_integral, def_integral
+from project.numerical.Loading.integration import  def_integral
 from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
                                                 reaction_forces
 from project.numerical.deformations import deflection_y
@@ -32,77 +29,12 @@ class LoadingTests(unittest.TestCase):
     def calc_error(real, approx):
         error = real - approx
         rel_error = np.abs(error) / real
-        if rel_error.any() == float('inf'):
+        if isinstance(rel_error, (float, int)):
+            if rel_error == float('inf'):
+                rel_error = 0
+        elif rel_error.any() == float('inf'):
             rel_error = 0
         return rel_error
-
-    def test_uni_variate_linear_RBF(self):
-        # Create random data to generate interpolation functions on
-        x, d = np.random.rand(2, 50)
-
-        # Create instance of our interpolation class
-        my_interpolant = InterpolateRBF(x, d)
-
-        # Create reference radial basis functiond
-        ref_interpolant = Rbf(x, d, function='linear')
-
-        # Generate points to test
-        xi = np.linspace(0, 1, 200)
-
-        di = ref_interpolant(xi) # interpolated values
-        fi = my_interpolant.interpolate(xi)
-
-        error = self.calc_error(di, fi)
-        assert max(error) < 0.01
-
-        ### Cleanup
-        del x, d, my_interpolant, ref_interpolant, xi, di, fi
-
-
-    # Our RBF Interpolant is currently developed to handle ONLY uni-variate datasets,
-    #       rather than bi-variate data. This would be a potential future update
-    #       This test is written for a previous version of the function where bi-variate data did work
-    @unittest.expectedFailure
-    def test_bi_variate_linear_RBF(self):
-        # Create random data to generate interpolation functions on
-        x, z, d = np.random.rand(3, 50)
-
-        # Create instance of our interpolation class
-        my_i = InterpolateRBF(x, z, d)
-
-        # Create reference radial basis function
-        rbfi = Rbf(x, z, d, function='linear')
-
-        # Generate points to test
-        xi = zi = np.linspace(0, 1, 200)
-        # xi = zi = [0.5]
-
-        di = rbfi(xi, zi)  # interpolated values
-        fi = my_i.interpolate(xi, zi)
-
-        assert (fi == di).all()
-
-        ### Cleanup
-        del x, z, d, my_i, rbfi, xi, zi, di, fi
-
-
-    def test_definite_integral(self):
-        ### Test Setup
-        # Create rbf interpolation function of random data points
-        z, d = np.random.rand(2, 50)
-        interpolator = Rbf(z, d, function='linear')
-
-        # Run reference integration
-        ref_integral = quad(interpolator, min(z), max(z))[0]
-
-        # Our integral
-        num_integral = def_integral(interpolator, min(z), max(z), num_bins=1000)
-
-        error = self.calc_error(ref_integral, num_integral)
-        assert error < 0.01 # Error must be less than 1 %
-
-        ### Cleanup
-        del z, d, interpolator, ref_integral, num_integral, error
 
     def test_poly_definite_integral(self):
         ### Test Setup
@@ -114,19 +46,15 @@ class LoadingTests(unittest.TestCase):
 
 
         # Run reference integration
-        ref_integral = quad(fn_test1, start, end)[0]
         ref_sol = 10.666667
         # Our integral
         num_integral = def_integral(fn_test1, start, end, num_bins=100)
 
-        error = self.calc_error(ref_integral, num_integral)
-        error2 = self.calc_error(ref_sol, num_integral)
+        error = self.calc_error(ref_sol, num_integral)
         assert error < 0.001  # Error must be less than 0.1 %
-        assert error2 < 0.001
 
         ### Cleanup
-        del start, end, ref_integral, ref_sol, num_integral, error, error2
-
+        del start, end, ref_sol, num_integral, error
 
 
     def test_double_integral(self):

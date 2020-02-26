@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-title: reaction_forces
+title: interpolation
 project: Do228-Assignment
 date: 2/20/2020
 author: lmaio
