@@ -10,6 +10,8 @@ elements = pd.read_csv("B737.inp", header=None, skiprows=6598, nrows=6588, error
 #open and read the table with displacements in x, y and z direction of all nodes
 displacement = pd.read_fwf("B737.rpt", header=None, skiprows=20074, nrows=6588, error_bad_lines=False)
 
+data = np.genfromtxt("B737.rpt", skip_header=20074, max_rows=6588) #Gebruik dit maar
+
 #rename the colums of the input and output tables
 nodes.columns = ['node', 'x', 'y', 'z']
 displacement.columns = ['node', 'd_tot', 'dx', 'dy', 'dz']
