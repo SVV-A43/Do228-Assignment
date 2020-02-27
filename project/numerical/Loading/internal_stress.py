@@ -288,7 +288,7 @@ def shear_flow_Vz():
         if seg_i != 0 and x[i] == 0.:
             qb_lastval[5] = qb_current
             qb_val_list[i] = qb_current
-            print("Finished at segment {}, i={} with x,y {},{} and qb of {}".format(seg_i,i, x[i],y[i],qb_current))
+            print("Finished calculation at segment {}, i={} with x,y {},{} and qb of {}".format(seg_i,i, x[i],y[i],qb_current))
             print("Max qb value of {} found at x,y = {},{}".format(np.amax(qb_val_list), x[np.where(qb_val_list == np.amax(qb_val_list))], y[np.where(qb_val_list == np.amax(qb_val_list))]))
             break
 
@@ -329,9 +329,9 @@ def shear_flow_Vz():
         perimeter_addition += m.hypot(dx, y[i]-y[i-1])
         if perimeter_addition > spacing > perimeter_old:
             if perimeter_addition - spacing <= perimeter_old - spacing:
-                qb_stiff_current += (A_stiff * (x[i] + y[i]) )/I_zz
+                qb_stiff_current += (A_stiff * (x[i] + y[i]) )/I_yy
             else:
-                qb_stiff_current += (A_stiff * (x[i-1] + y[i-1]) )/I_zz
+                qb_stiff_current += (A_stiff * (x[i-1] + y[i-1]) )/I_yy
             perimeter_addition -= spacing
             stiff_counter += 1
 
@@ -422,7 +422,7 @@ def direct_stress():
     sigma_xx_y = np.zeros(sz)
     # outer section
     for i in range(len(x)):
-        sigma_xx_z[i] = My*(x[i]-x_centroid)/I_yy
+        sigma_xx_z[i] = My*(-x[i]-x_centroid)/I_yy
         sigma_xx_y[i] = Mz*y[i]/I_zz
 
     sigma_xx_outer = sigma_xx_z + sigma_xx_y
@@ -436,7 +436,7 @@ def direct_stress():
     sigma_xx_y = np.zeros(sz_spar)
     # outer section
     for i in range(sz_spar):
-        sigma_xx_z[i] = My*(x_spar[i]-x_centroid)/I_yy
+        sigma_xx_z[i] = My*(-x_spar[i]-x_centroid)/I_yy
         sigma_xx_y[i] = Mz*y_spar[i]/I_zz
 
     sigma_xx_spar = sigma_xx_z + sigma_xx_y
