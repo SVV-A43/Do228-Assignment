@@ -27,7 +27,7 @@ from project.numerical.Loading.aircraft_configs import DornierDo228, Boeing737
 
 
 ### USE THIS SWITCH TO SET WHICH AIRCRAFT DATA TO USE ###
-VALIDATION_MODE = True                          #
+VALIDATION_MODE = False                                 #
 #########################################################
 if VALIDATION_MODE:
     Aircraft = Boeing737
