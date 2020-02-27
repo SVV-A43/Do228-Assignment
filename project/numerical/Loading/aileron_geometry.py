@@ -7,15 +7,13 @@ project: Do228-Assignment
 date: 2/17/2020
 author: lmaio
 """
-
-
 # Imports
 import sys
-import os
+import warnings
+
 import numpy as np
 
-from tqdm import tqdm
-from definitions import AERO_LOADING_DATA_Do228, AERO_LOADING_DATA_B737
+from definitions import *
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.integration import def_integral
@@ -25,11 +23,15 @@ from project.numerical.Loading.aircraft_configs import DornierDo228, Boeing737
 
 
 
-
 ### USE THIS SWITCH TO SET WHICH AIRCRAFT DATA TO USE ###
 VALIDATION_MODE = False                                 #
 #########################################################
+
+
+
+
 if VALIDATION_MODE:
+    warnings.warn('!!! Using VALIDATION Aircraft Data !!!')
     Aircraft = Boeing737
 else:
     Aircraft = DornierDo228
@@ -37,7 +39,6 @@ else:
 class AileronGeometry(Aircraft):
     def __init__(self, filename=AERO_LOADING_DATA_Do228):
         super(AileronGeometry, self).__init__()
-
 
         ## SAME FOR ALL AIRCRAFT
         ### Boundary Conditions
@@ -56,7 +57,6 @@ class AileronGeometry(Aircraft):
 
         self.__x_coords = []
         self.__z_coords = []
-
 
         if self.aircraft == 'boeing_737':
             # Calculate x-point_coords of stations along span
@@ -93,8 +93,7 @@ class AileronGeometry(Aircraft):
             for x in range(self.num_span_stations):
                 self.__load_coords[z, x] = (self.__z_coords[z], self.__x_coords[x])
 
-        # Functions to calculate geometry
-
+    # Private methods to calculate geometry
     def __th_xi(self, i):
         return (i - 1) / self.num_span_stations * np.pi
 
@@ -133,7 +132,6 @@ class AileronGeometry(Aircraft):
         if e > self.load_data.shape[0]:
             e = -1
 
-        # Returns
         return self.load_data[s:e, 0], self.load_data[s:e, 1], self.load_data[s:e, 2]
 
     def q_tilde(self, **kwargs):
@@ -174,21 +172,12 @@ class AileronGeometry(Aircraft):
                 return np.ones_like(x) * tau
             return q_tilde
 
-
-
         for station in range(self.num_span_stations):
             x, z, p = self.station_data(station)
-
             t = p*(z) # This causes a negative moment
-
             int_fn = InterpolateRBF(z, t)
 
-            # def tau_inner_fn(z):
-            #     return np.multiply(int_fn.interpolate(z), np.squeeze(z - self.z_tilde))
-            #     return int_fn.interpolate(z)
-
-
-            station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
+            station_load = def_integral(int_fn.interpolate, -1*self.C_a, 0, num_bins=num_bins)
             tau_x.append(station_load)
             x_coords.append(x[0])
         self.tau_x = np.array(tau_x)

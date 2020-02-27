@@ -24,7 +24,7 @@ from project.numerical.distribution_equations import DistributionEquations
 
 # ------------------------ LOCAL REFERENCE FRAME -----------------------
 
-def plots_y_deformation(steps=50):
+def plots_y_distribution(steps=50):
     G = AileronGeometry()
     E = DistributionEquations()
 
@@ -32,7 +32,7 @@ def plots_y_deformation(steps=50):
 
     data = np.zeros((steps, 4))
     data[:, 0] = np.linspace(min_x, max_x, steps)
-
+    data[:, 1] = E.deformations_in_global_coords(steps)[:, 1]
     for i, x in enumerate(data[:, 0]):
         data[i, 1] = E.deflection_y(x)
         data[i, 2] = E.moment_about_z(x)
@@ -41,19 +41,19 @@ def plots_y_deformation(steps=50):
 
     fig, axs = plt.subplots(2, 2, sharex=True)
     axs[0, 0].plot(data[:, 0], data[:, 1])
-    axs[0, 0].set(ylabel="v(x)")
-    axs[0, 0].set_title('Deflections in local y')
+    axs[0, 0].set(ylabel=r"$v(x)$ [m]")
+    axs[0, 0].set_title('Deflection in y')
 
     axs[1, 0].plot(data[:, 0], data[:, 2])
-    axs[1, 0].set(ylabel="M_z(x)")
-    axs[1, 0].set_title("Moment about local z'")
+    axs[1, 0].set(ylabel=r"$M_z (x)$ [Nm]")
+    axs[1, 0].set_title("Bending moment about z")
 
     axs[1, 1].plot(data[:, 0], data[:, 3])
-    axs[1, 1].set(ylabel="Sy(x)")
-    axs[1, 1].set_title('Shear in local y')
+    axs[1, 1].set(ylabel=r"$S_y (x)$ [N]")
+    axs[1, 1].set_title('Shear in y')
 
     for ax in axs.flat:
-        ax.set(xlabel="x'")
+        ax.set(xlabel="x")
 
     # for ax in axs.flat:
     #     ax.label_outer()
@@ -61,7 +61,7 @@ def plots_y_deformation(steps=50):
     # plt.tight_layout()
     plt.show()
 
-def plots_z_deformation(steps=50):
+def plots_z_distribution(steps=50):
     G = AileronGeometry()
     E = DistributionEquations()
 
@@ -69,7 +69,7 @@ def plots_z_deformation(steps=50):
 
     data = np.zeros((steps, 4))
     data[:, 0] = np.linspace(min_x, max_x, steps)
-
+    data[:, 1] = E.deformations_in_global_coords(steps)[:, 2]
     for i, x in enumerate(data[:, 0]):
         data[i, 1] = E.deflection_z(x)
         data[i, 2] = E.moment_about_y(x)
@@ -78,27 +78,21 @@ def plots_z_deformation(steps=50):
 
     fig, axs = plt.subplots(2, 2, sharex=True)
     axs[0, 0].plot(data[:, 0], data[:, 1])
-    axs[0, 0].set(ylabel="v(x) [m]")
-    axs[0, 0].set_title('Deflections in local z')
+    axs[0, 0].set(ylabel=r"$v(x)$ [m]")
+    axs[0, 0].set_title('Deflection in z')
 
     axs[1, 0].plot(data[:, 0], data[:, 2])
-    axs[1, 0].set(ylabel="M_z(x) [Nm]")
-    axs[1, 0].set_title("Moment about local y'")
+    axs[1, 0].set(ylabel=r"$M_z (x)$ [Nm]")
+    axs[1, 0].set_title("Bending moment about y")
 
     axs[1, 1].plot(data[:, 0], data[:, 3])
-    axs[1, 1].set(ylabel="Sy(x) [m]")
-    axs[1, 1].set_title('Shear in local z')
+    axs[1, 1].set(ylabel=r"$S_z (x)$ [N]")
+    axs[1, 1].set_title('Shear in z')
 
     for ax in axs.flat:
-        ax.set(xlabel="x'")
+        ax.set(xlabel="x")
 
-
-    # for ax in axs.flat:
-    #     ax.label_outer()
-
-    # plt.tight_layout()
     plt.show()
-
 
 
 
@@ -112,42 +106,38 @@ def plots_torque_distribution(steps=50):
     data[:, 0] = np.linspace(min_x, max_x, steps)
 
     for i, x in enumerate(data[:, 0]):
-        data[i, 1] = E.torsion_x(x)
+        data[i, 1] = E.angle_of_twist(x)
+        data[i, 2] = E.torsion_x(x)
 
-    plt.plot(data[:, 0], data[:, 1])
-    plt.ylabel('T(x) [Nm]')
-    plt.xlabel('x [m]')
-    plt.title('Torque distribution')
-    plt.show()
+    gs = gridspec.GridSpec(2, 2)
 
+    pl.figure()
+    ax = pl.subplot(gs[0, 0])  # row 0, col 0
+    pl.plot([0, 1])
 
+    ax = pl.subplot(gs[0, 1])  # row 0, col 1
+    pl.plot([0, 1])
 
+    ax = pl.subplot(gs[1, :])  # row 1, span all columns
+    pl.plot([0, 1])
 
+    fig, axs = plt.subplots(2, sharex=True)
+    axs[0].plot(data[:, 0], -1*data[:, 1])
+    axs[0].set(ylabel=r"$\theta(x)$ [deg/m]")
+    axs[0].set_title('Angle of Twist')
 
-## -------------- TORSION ---------------------
+    axs[1].plot(data[:, 0], -1*data[:, 2])
+    axs[1].set(ylabel=r"$T(x)$ [Nm]")
+    axs[1].set_title("Torque")
 
-def plot_angle_of_twist(steps=50):
-    G = AileronGeometry()
-    E = DistributionEquations()
-    min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
-
-    deflect_data = np.zeros((steps, 2))
-    deflect_data[:, 0] = np.linspace(min_x, max_x, steps)
-
-    for i, x in enumerate(deflect_data[:, 0]):
-        deflect_data[i, 1] = E.angle_of_twist(x)
-
-
-    plt.plot(deflect_data[:,0], deflect_data[:,1], color='red')
-    plt.ylabel('Angle of twist [degrees]')
-    plt.xlabel('x-coordinate (along span) [m]')
-    plt.title(f'Angle of twist along span')
-    # plt.legend()
+    for ax in axs.flat:
+        ax.set(xlabel="x")
+        ax.label_outer()
 
     plt.show()
 
 
-### -------------- GENERAL PLOTS -----------------
+### -------------- Plots for Validation -----------------
 def plot_lateral_deflection(steps=50, coord_sys='global', plot_3d=False):
     E = DistributionEquations()
     G = AileronGeometry()
@@ -177,37 +167,14 @@ def plot_lateral_deflection(steps=50, coord_sys='global', plot_3d=False):
         plt.show()
 
 
-        # fig, axs = plt.subplots(2, sharex=True)
-        # fig.suptitle(f'Lateral Deflections; {coord_sys} reference frame; {G.aircraft}')
-        # fig.subplots_adjust(top=0.9)
-        #
-        # axs[0].plot(deflect_data[:, 0], deflect_data[:, 1]*1000)
-        # axs[0].set(ylabel='v(x) [mm]')
-        #
-        # axs[1].plot(deflect_data[:, 0], deflect_data[:, 2]*1000)
-        # axs[1].set(ylabel='w(x) [mm]')
-        # axs[1].invert_yaxis()
-        #
-        # for ax in axs.flat:
-        #     ax.set(xlabel='Spanwise x-location [m]')
-        #
-        # for ax in axs.flat:
-        #     ax.label_outer()
-        #
-        # # plt.tight_layout()
-        # plt.show()
-
-
-
-
 
 if __name__ == '__main__':
     # steps = int(input('Number of steps for y_deflection: '))
     # plot_lateral_deflection(steps=50, coord_sys='local')
     # plot_angle_of_twist(steps=50)
 
-    plots_y_deformation()
-    plots_torque_distribution()
-    plots_z_deformation()
+    plots_y_distribution()
+    plots_z_distribution()
+    # plots_torque_distribution()
 
-    plot_lateral_deflection()
+    # plot_lateral_deflection()
