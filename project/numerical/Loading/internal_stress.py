@@ -20,6 +20,8 @@ G = AileronGeometry()
 E = DistributionEquations()
 
 #############  OUR MODEL ################
+min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
+
 def Vy(x):
     return E.shear_y(x)
 def Vz(x):
