@@ -150,6 +150,7 @@ def plot_angle_of_twist(steps=50):
 ### -------------- GENERAL PLOTS -----------------
 def plot_lateral_deflection(steps=50, coord_sys='global', plot_3d=False):
     E = DistributionEquations()
+    G = AileronGeometry()
 
     if coord_sys=='global':
         deflect_data = E.deformations_in_global_coords(steps=steps)
@@ -170,22 +171,21 @@ def plot_lateral_deflection(steps=50, coord_sys='global', plot_3d=False):
 
     else:
         fig, axs = plt.subplots(2, sharex=True)
-        fig.suptitle(f'Lateral deflections along span; {coord_sys} coordinate system')
+        fig.suptitle(f'Lateral Deflections; {coord_sys} reference frame; {G.aircraft}')
         fig.subplots_adjust(top=0.9)
 
-        axs[0].plot(deflect_data[:, 0], deflect_data[:, 1])
-        axs[0].set(ylabel='Deflections in y-direction')
+        axs[0].plot(deflect_data[:, 0], deflect_data[:, 1]*1000)
+        axs[0].set(ylabel='v(x) [mm]')
 
-        axs[1].plot(deflect_data[:, 0], deflect_data[:, 2])
-        axs[1].set(ylabel='Deflections in z-direction')
+        axs[1].plot(deflect_data[:, 0], deflect_data[:, 2]*1000)
+        axs[1].set(ylabel='w(x) [mm]')
         axs[1].invert_yaxis()
 
         for ax in axs.flat:
-            ax.set(xlabel='x coordinate along span')
+            ax.set(xlabel='Spanwise x-location [m]')
 
-        axs.flat
-        # for ax in axs.flat:
-        #     ax.label_outer()
+        for ax in axs.flat:
+            ax.label_outer()
 
         # plt.tight_layout()
         plt.show()
@@ -199,6 +199,8 @@ if __name__ == '__main__':
     # plot_lateral_deflection(steps=50, coord_sys='local')
     # plot_angle_of_twist(steps=50)
 
-    plots_y_deformation()
-    plots_torque_distribution()
-    plots_z_deformation()
+    # plots_y_deformation()
+    # plots_torque_distribution()
+    # plots_z_deformation()
+
+    plot_lateral_deflection()

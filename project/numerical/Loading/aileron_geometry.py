@@ -27,9 +27,9 @@ from project.numerical.Loading.aircraft_configs import DornierDo228, Boeing737
 
 
 ### USE THIS SWITCH TO SET WHICH AIRCRAFT DATA TO USE ###
-validation_mode = True                                  #
+VALIDATION_MODE = True                             #
 #########################################################
-if validation_mode:
+if VALIDATION_MODE:
     Aircraft = Boeing737
 else:
     Aircraft = DornierDo228
@@ -48,6 +48,8 @@ class AileronGeometry(Aircraft):
         self.bound_conds[10, 0] = self.d_3 * np.cos(self.theta)
 
         ### Class Attributes
+        if self.aircraft == 'boeing_737':
+            self.pressure = np.expand_dims(self.pressure, axis=0)
 
         self.num_span_stations = len(self.pressure[0, :])
         self.num_chord_stations = len(self.pressure[:, 0])
@@ -55,13 +57,23 @@ class AileronGeometry(Aircraft):
         self.__x_coords = []
         self.__z_coords = []
 
-        # Calculate x-point_coords of stations along span
-        for i in range(self.num_span_stations):
-            self.__x_coords.append(self.__xi(i + 1))
 
-        # Calculate z-point coords of station along chord
-        for j in range(self.num_chord_stations):
-            self.__z_coords.append(self.__zi(j + 1))
+        if self.aircraft == 'boeing_737':
+            # Calculate x-point_coords of stations along span
+            self.__x_coords = np.linspace(0, self.l_a, self.num_span_stations)
+
+            # Calculate z-point coords of station along chord
+            for j in range(self.num_chord_stations):
+                self.__z_coords.append(-0.25 * self.C_a)
+
+        else:
+            # Calculate x-point_coords of stations along span
+            for i in range(self.num_span_stations):
+                self.__x_coords.append(self.__xi(i + 1))
+
+            # Calculate z-point coords of station along chord
+            for j in range(self.num_chord_stations):
+                self.__z_coords.append(self.__zi(j + 1))
 
         num_data_pts = self.num_span_stations * self.num_chord_stations
         self.load_data = np.zeros((num_data_pts, 3))
@@ -129,14 +141,20 @@ class AileronGeometry(Aircraft):
         self.q_x = []
         x_coords = []
 
-        for station in range(self.num_span_stations):
-            x, z, p = self.station_data(station)
-            int_fn = InterpolateRBF(z, p)
-            station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
-            self.q_x.append(station_load)
-            x_coords.append(x[0])
-        self.q_x = np.array(self.q_x)
-        x_coords = np.array(x_coords)
+        if self.aircraft == 'boeing_737':
+            def q_tilde(x):
+                return np.ones_like(x) * self.pressure[0, 0]
+            return q_tilde
+
+        else:
+            for station in range(self.num_span_stations):
+                x, z, p = self.station_data(station)
+                int_fn = InterpolateRBF(z, p)
+                station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
+                self.q_x.append(station_load)
+                x_coords.append(x[0])
+            self.q_x = np.array(self.q_x)
+            x_coords = np.array(x_coords)
 
         # Create interpolation function
         q_tilde_x = InterpolateRBF(x_coords, self.q_x)
@@ -148,6 +166,15 @@ class AileronGeometry(Aircraft):
         num_bins = kwargs.pop('num_bins', 100)
         tau_x = []
         x_coords = []
+
+        if self.aircraft == 'boeing_737':
+            moment_arm = -0.25*self.C_a - self.z_tilde
+            def q_tilde(x):
+                tau = self.pressure[0, 0] * moment_arm
+                return np.ones_like(x) * tau
+            return q_tilde
+
+
 
         for station in range(self.num_span_stations):
             x, z, p = self.station_data(station)

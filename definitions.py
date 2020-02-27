@@ -15,4 +15,4 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 AERO_LOADING_DATA_Do228 = os.path.join(ROOT_DIR, 'project', 'numerical', 'Loading',
                                  'aero_loading_data', 'aerodynamicloaddo228.dat')
 AERO_LOADING_DATA_B737 = os.path.join(ROOT_DIR, 'project', 'numerical', 'Loading',
-                                 'aero_loading_data', 'b737_loading.dat')
+                                 'aero_loading_data', 'aero_loading_737.dat')

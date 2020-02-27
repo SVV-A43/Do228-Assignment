@@ -25,7 +25,6 @@ from project.numerical.transformations import CoordinateTransforms
 
 
 class LoadingTests(unittest.TestCase):
-
     @staticmethod
     def calc_error(real, approx):
         error = real - approx

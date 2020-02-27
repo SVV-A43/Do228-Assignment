@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This mus
 
 class DornierDo228():
     def __init__(self, filename=AERO_LOADING_DATA_Do228):
+        self.aircraft = 'dornier_do228'
         self.stringers = True
         self.C_a = 0.515  # [m]
         self.l_a = 2.691  # [m]
@@ -60,7 +61,8 @@ class DornierDo228():
 
 # Used for validation
 class Boeing737():
-    def __init__(self, filename=AERO_LOADING_DATA_Do228):
+    def __init__(self, filename=AERO_LOADING_DATA_B737):
+        self.aircraft = 'boeing_737'
         self.stringers = False
         self.C_a = 0.605  # [m]
         self.l_a = 2.661  # [m]
