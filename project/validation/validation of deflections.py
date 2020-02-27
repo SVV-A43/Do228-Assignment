@@ -1,8 +1,8 @@
 from math import *
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
+import pandas as pd
 
 #open and read the table with x, y and z location of all the nodes used for the input data
 nodes = pd.read_csv("B737.inp", header=None, skiprows=9, nrows=6588, error_bad_lines=False)

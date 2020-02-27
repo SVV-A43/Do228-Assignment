@@ -7,10 +7,11 @@ project: Do228-Assignment
 created: 25/02/2020
 author: lmaio
 """
-# Imports
-import numpy as np
 import os
 import sys
+
+# Imports
+import numpy as np
 
 # This must come before the next imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
@@ -18,7 +19,6 @@ from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.integration import def_integral
 from project.numerical.reaction_forces import reaction_forces
 from project.numerical.transformations import CoordinateTransforms
-
 
 
 class DistributionEquations():
@@ -55,9 +55,8 @@ class DistributionEquations():
     
         v = (-1/(self.G.E * self.G.I_zz) * terms).sum() + C1*x + C2
         return v
-    
+
     def deflection_z(self, x):
-    
         R1z = self.r[3]
         R2z = self.r[4]
         R3z = self.r[5]
@@ -73,7 +72,6 @@ class DistributionEquations():
         terms[4] = -1*R3z / 6 * self.mac(x - self.G.x3)**3
     
         w = (-1/(self.G.E * self.G.I_yy) * terms).sum() + C3*x + C4
-    
         return w
 
     def _theta_eq_variable_terms(self, x):
@@ -92,19 +90,17 @@ class DistributionEquations():
         terms[5] = F * np.sin(self.G.theta) * (0 - self.G.z_tilde) * self.mac(x - self.G.x_a_1)
         terms[6] = self.G.P * np.cos(self.G.theta) * self.G.y_p * self.mac(x - self.G.x_a_2)
         terms[7] = -1 * self.G.P * np.sin(self.G.theta) * (0 - self.G.z_tilde) * self.mac(x - self.G.x_a_2)
-
         return (1 / (self.G.G * self.G.J) * terms).sum()
 
     
     def angle_of_twist(self, x):
         C5 = self._theta_eq_variable_terms(self.G.x_a_1)
-    
         theta_rad = self._theta_eq_variable_terms(x) + -C5
         return np.degrees(theta_rad)
-    
+
+
     # ---- BENDING MOMENTS --------
     def moment_about_z(self, x):
-
         R1y = self.r[0]
         R2y = self.r[1]
         R3y = self.r[2]
@@ -217,11 +213,3 @@ class DistributionEquations():
         out[:, :-1] = global_lateral
         out[:, -1] = local_deform[:, -1]
         return out
-
-
-
-
-
-
-
-
