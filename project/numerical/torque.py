@@ -6,6 +6,17 @@ Created on Thu Feb 27 12:25:48 2020
 @author: Axel
 """
 import numpy as np
+import os
+import sys
+
+# This must come before the next imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
+from project.numerical.distribution_equations import DistributionEquations
+
+E = DistributionEquations()
+
+def T(x):
+    return E.torsion_x(x)
 
 
 C = 0.515     #[m]
