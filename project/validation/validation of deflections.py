@@ -32,6 +32,11 @@ displacement_le = displacement[checknodes]
 displacement_hl = displacement[checknodes2]
 displacement_te = displacement[checknodes3]
 
+nodehinge3 = nodes[nodes.x.eq(2591) & nodes.y.eq(0) & nodes.z.eq(0)]
+check = displacement.node.isin(nodehinge3['node'])
+dhinge3 = displacement[check]
+print(dhinge3)
+
 #plotting the nodes to check if all nodes create the aileron
 x = nodes['x']
 y = nodes['y']
@@ -53,19 +58,22 @@ dy_le = displacement_le['dy']
 dy_hl = displacement_hl['dy']
 dy_te = displacement_te['dy']
 
+'''
 plt.subplot(311)
 plt.scatter(x_le, dy_le)
 plt.title('leading edge')
-
-plt.subplot(312)
+'''
+#plt.subplot(312)
 plt.scatter(x_hl, dy_hl)
 plt.title('hinge line')
-
+plt.xlabel('x-location [mm]')
+plt.ylabel('deflection [mm]')
+'''
 plt.subplot(313)
 plt.scatter(x_te, dy_te)
 plt.title('trailing edge')
-
-plt.plot()
+'''
+#plt.plot()
 
 
 '''
