@@ -19,7 +19,7 @@ from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.integration import  def_integral
 from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
                                                 reaction_forces
-from project.numerical.deformations import deflection_y
+from project.numerical.distribution_equations import deflection_y
 
 
 
