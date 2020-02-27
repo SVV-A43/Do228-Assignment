@@ -10,8 +10,16 @@ author: lmaio
 
 
 # Imports
+import sys
+import os
 import numpy as np
+
+from tqdm import tqdm
 from definitions import AERO_LOADING_DATA
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
+from project.numerical.Loading.integration import def_integral
+from project.numerical.Loading.interpolation import InterpolateRBF
 
 
 # CODE...
@@ -20,14 +28,19 @@ from definitions import AERO_LOADING_DATA
 class AileronGeometry():
     def __init__(self, filename=AERO_LOADING_DATA):
         self.C_a  = 0.515       # [m]
-        self.l_a  = 2.961       # [m]
+        self.l_a  = 2.691       # [m]
         self.x1   = 0.174       # [m]
         self.x2   = 1.051       # [m]
         self.x3   = 2.512       # [m]
         self.x_a  = 30.0 / 100  # [m]
+        self.x_a_1 = self.x2 - self.x_a / 2     # [m]
+        self.x_a_2 = self.x2 + self.x_a / 2     # [m]
+        self.z_tilde = -0.35375    # [m] distance to shear center #FIXME: THIS IS FROM VERIFICATION MODEL
         self.h    = 24.8 / 100  # [m]
         self.d_1  = 1.034 / 100 # [m]
-        self.d_2  = 2.066 / 100 # [m]
+        self.d_3  = 2.066 / 100 # [m]
+        self.z_h = -1* self.h / 2   # [m] #TODO: Verify this is true
+        self.y_p = self.h / 2   # [m]
         self.theta = np.deg2rad(25)         # [rad]
 
         self.t_sk = 1.1         # [mm]
@@ -36,13 +49,33 @@ class AileronGeometry():
         self.h_st = 1.5 * 10    # [mm]
         self.w_st = 3.0 * 10    # [mm]
         self.n_st = 11          # [-]
+
         self.I_xx = None
-        self.I_yy = None
-        self.I_zz = None
-        self.z_sc = None        # [m] z_tilde in equilibrium equations
+        self.I_yy = 5.643650631210155e-05  # [m^4]
+        self.I_zz = 1.4221372629975417e-05 # [m^4]
+
+        self.J = 0.00020500801555445113
+        self.J_polar = self.I_yy + self.I_zz # [m^4]
 
 
-        self.__pressure = np.genfromtxt(filename, delimiter=',')
+        ### Constants:
+        self.E = 73.1 * 10**9       # [Pa]
+        self.G = 28 * 10**9         # [Pa]
+
+        ### Loads:
+        self.P = 20.6 * 10**3       # [N]
+        self.__pressure = np.genfromtxt(filename, delimiter=',') * 10 ** 3
+
+        ### Boundary Conditions
+        self.bound_conds = np.zeros((11, 1))
+        self.bound_conds[7, 0] = -1 * self.d_1 * np.sin(self.theta)
+        self.bound_conds[8, 0] = -1 * self.d_3 * np.sin(self.theta)
+        self.bound_conds[9, 0] = self.d_1 * np.cos(self.theta)
+        self.bound_conds[10, 0] = self.d_3 * np.cos(self.theta)
+
+
+        ### Class Attributes
+
         self.num_span_stations = len(self.__pressure[0, :])
         self.num_chord_stations = len(self.__pressure[:, 0])
 
@@ -77,6 +110,10 @@ class AileronGeometry():
             for x in range(self.num_span_stations):
                 self.__load_coords[z, x] = (self.__z_coords[z], self.__x_coords[x])
 
+
+
+
+
     # Functions to calculate geometry
     def __th_xi(self, i):
         return (i - 1) / self.num_span_stations * np.pi
@@ -106,12 +143,68 @@ class AileronGeometry():
         return self.load_data[:,0], self.load_data[:,1], self.load_data[:,2]
 
     def station_data(self, id):
+        '''
+        :param id: station id between 0 and 40
+        :return: x, z, p coords array
+        '''
         s = id * 81 #start idx
         e = (id + 1) * 81 #end idx
         if e > self.load_data.shape[0]:
             e = -1
 
+        # Returns
         return self.load_data[s:e, 0], self.load_data[s:e, 1], self.load_data[s:e, 2]
+
+    def q_tilde(self, **kwargs):
+        num_bins = kwargs.pop('num_bins', 100)
+        self.q_x = []
+        x_coords = []
+
+        for station in range(self.num_span_stations):
+            x, z, p = self.station_data(station)
+            int_fn = InterpolateRBF(z, p)
+            station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
+            self.q_x.append(station_load)
+            x_coords.append(x[0])
+        self.q_x = np.array(self.q_x)
+        x_coords = np.array(x_coords)
+
+        # Create interpolation function
+        q_tilde_x = InterpolateRBF(x_coords, self.q_x)
+
+        return q_tilde_x.interpolate
+
+
+    def tau_tilde(self, **kwargs):
+        num_bins = kwargs.pop('num_bins', 100)
+        tau_x = []
+        x_coords = []
+
+        for station in range(self.num_span_stations):
+            x, z, p = self.station_data(station)
+
+            t = p*(z) # This causes a negative moment
+
+            int_fn = InterpolateRBF(z, t)
+
+            # def tau_inner_fn(z):
+            #     return np.multiply(int_fn.interpolate(z), np.squeeze(z - self.z_tilde))
+            #     return int_fn.interpolate(z)
+
+
+            station_load = def_integral(int_fn.interpolate, min(z), max(z), num_bins=num_bins)
+            tau_x.append(station_load)
+            x_coords.append(x[0])
+        self.tau_x = np.array(tau_x)
+        x_coords = np.array(x_coords)
+
+        # Create interpolation function
+        tau_tilde_x = InterpolateRBF(x_coords, self.tau_x)
+
+        return tau_tilde_x.interpolate
+
+
+
 
 
 

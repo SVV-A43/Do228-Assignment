@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-title: reaction_forces
+title: interpolation
 project: Do228-Assignment
 date: 2/20/2020
 author: lmaio
@@ -14,8 +14,6 @@ import sys
 import numpy as np
 
 # This must come before the next imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
-from project.numerical.Loading.aileron_geometry import AileronGeometry
 
 
 class InterpolateRBF():
@@ -63,7 +61,7 @@ class InterpolateRBF():
         '''
         if self._basis == 'linear':
             return r
-
+        # Only linear RBF implemented for now
         raise NotImplementedError
 
     def _compute_coeffs(self):
@@ -85,42 +83,28 @@ class InterpolateRBF():
 
     def interpolate(self, input_coords):
         '''ONE VARIABLE ONLY'''
-
-
         if isinstance(input_coords, (float, int)):
             input_coords = [input_coords]
-        coords_in = np.asarray(input_coords) # Each set of pts_in is
+        coords = np.asarray(input_coords)
 
-        if coords_in.ndim == 1:
-            coords_in = np.array([coords_in]).T
+        if coords.ndim == 1:
+            coords = np.array([coords]).T # Input coords along axis0
 
-        num_coords_sets = coords_in.shape[1]
-        num_coords = coords_in.shape[0]
+        def euclidean_norm_1d(x): # Calculate distance to known coords, using only first axis
+            return np.sqrt((x.T - self._known_coords.T)**2)
 
-        num_interpolant_terms = self.coefficients.shape[1] # Number of terms in the final interpolant
+        # Calc matrix phi, using only first axis (most recent added by integral fn)
+        phi_r = np.apply_along_axis(euclidean_norm_1d, 0, coords)
 
-        self.phi_x = np.zeros((num_coords_sets, num_coords, num_interpolant_terms)) # Basis terms
+        # Calculate dot product using the first axis of both matrices
+        interp_pts = np.tensordot(np.squeeze(self.coefficients), np.squeeze(phi_r), axes=([0],[0]))
 
-        # Transpose known_coords for proper matrix operation
-        knwn_coords = self._known_coords.T
-
-        # Calculate RBF matrix for each set of
-        # ONE VARIABLE INTERPOLATOR ONLY
-
-        for s in range(num_coords_sets):
-            for i in range(num_coords):
-                for j in range(num_interpolant_terms):
-                    r = self._dist_r(coords_in[i, s], knwn_coords[j, 0])
-                    self.phi_x[s, i, j] = self._phi(r)
-
-        F = np.zeros((num_coords, num_coords_sets))
-        for s in range(num_coords_sets):
-            F[:, s] = np.dot(self.phi_x[s, :, :], self.coefficients.T)[:, 0]
-
-        return F
+        return interp_pts
 
 
 def select_station(station_id):
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
+    from project.numerical.Loading.aileron_geometry import AileronGeometry
     '''
     :param station_id: station number
     :return:
@@ -144,7 +128,66 @@ def main():
     di = my_inter.interpolate(xi)
     print(di)
 
+def plot_chordwise_interpolate():
+    aileron = AileronGeometry()
+    station = 20
+    x, z, p = aileron.station_data(station)
+
+    station_fn = InterpolateRBF(z, p)
+    zi = np.linspace(min(z), max(z), 100)
+    pi = station_fn.interpolate(zi)
+
+    plt.scatter(z, p, color='green', label='Raw pressure data')
+    plt.plot(zi, pi, color='red', label='Interpolating function')
+    plt.ylabel('Pressure [N/m^2]')
+    plt.xlabel('z-coordinate (along chord) [m]')
+    plt.title(f'Interpolating function at spanwise station {station}, (x={np.round(x[0], 2)})')
+    plt.legend()
+
+    plt.show()
+
+def plot_spanwise_interpolate():
+    aileron = AileronGeometry()
+    x = aileron.station_x_coords()
+    q_x_fn = aileron.q_tilde()
+    qx = aileron.q_x
+
+    station_fn = InterpolateRBF(x, qx)
+    xi = np.linspace(min(x), max(x), 150)
+    qi = station_fn.interpolate(xi)
+
+    plt.scatter(x, qx, color='green', label='Pressure data per station')
+    plt.plot(xi, qi, color='red', label='Interpolating function')
+    plt.ylabel('Pressure per station [N/m]')
+    plt.xlabel('x-coordinate (along span) [m]')
+    plt.title(f'Aerodynamic Load per Spanwise Station')
+    plt.legend()
+
+    plt.show()
+
+def plot_aerotorque_interpolate():
+    aileron = AileronGeometry()
+    x = aileron.station_x_coords()
+    t_x_fn = aileron.tau_tilde()
+    tx = aileron.tau_x
+
+    station_fn = InterpolateRBF(x, tx)
+    xi = np.linspace(min(x), max(x), 150)
+    ti = station_fn.interpolate(xi)
+
+    plt.scatter(x, tx, color='green', label='Distributed torque raw data')
+    plt.plot(xi, ti, color='red', label='Interpolating function')
+    plt.ylabel('Distributed torque [Nm/m]')
+    plt.xlabel('x-coordinate (along span) [m]')
+    plt.title(f'Distribution of Torque caused by Aerodynamic Loads')
+    plt.legend()
+
+    plt.show()
 
 if __name__ == '__main__':
-
-    main()
+    from project.numerical.Loading.aileron_geometry import AileronGeometry
+    from matplotlib import pyplot as plt
+    # plot_chordwise_interpolate()
+    # plot_spanwise_interpolate()
+    plot_aerotorque_interpolate()
+    # main()
