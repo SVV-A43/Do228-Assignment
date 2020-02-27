@@ -7,23 +7,23 @@ import math as m
 
 ######################## Part I - parameters as in assignment #######################################
 aircraft = "Do228" # Write either A320, F100, CRJ700 or Do228 (bear in mind capitals); this is used for aerodynamic loading
-Ca = 0.605  # m
-la = 2.661  # m
-x1 = 0.172  # m
-x2 = 1.211  # m
-x3 = 2.591  # m
-xa = 0.35   # m
-ha = 0.205  # m
+Ca = 0.515  # m
+la = 2.691  # m
+x1 = 0.174  # m
+x2 = 1.051  # m
+x3 = 2.512  # m
+xa = 0.30   # m
+ha = 24.8 / 100  # m
 tsk = 1.1/1000  # m
-tsp = 2.8/1000  # m
+tsp = 2.2/1000  # m
 tst = 1.2/1000  # m
-hst = 16./1000   # m
-wst = 19./1000   # m
-nst = 15  # -
-d1 = 0.01154  # m
-d3 = 0.01840  # m
-theta = m.radians(28)  # rad
-P = 97.4*1000  # N
+hst = 15./1000   # m
+wst = 30./1000   # m
+nst = 11  # -
+d1 = 1.034 / 100  # m
+d3 = 2.066 / 100  # m
+theta = m.radians(25)  # rad
+P = 20.6 * 10 ** 3  # N
 
 ######################## Part II - bending stiffness calculations #######################################
 ### Create the cross-section object
@@ -64,8 +64,8 @@ _ = crosssection.J                   # torsional constant
 ######################## Part IV - Deflection calculations #######################################
 ### Definition of additional parameters
 N = 20     # Number of basis functions to use in Rayleigh-Ritz method (total number of coefficients is 3*N)
-E = 72.9*10**9       # E-modulus (Pa)
-G = 27.1*10**9       # G-modulus (Pa)
+E = 73.1 * 10**9       # E-modulus (Pa)
+G = 28 * 10**9        # G-modulus (Pa)
 
 ### Create the aileron object
 """ Merges the cross-sectional properties with the spanwise properties (length and material properties)"""
