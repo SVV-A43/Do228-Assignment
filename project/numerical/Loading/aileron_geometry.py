@@ -25,6 +25,10 @@ from project.numerical.Loading.interpolation import InterpolateRBF
 # CODE...
 
 
+
+
+
+
 class AileronGeometry():
     def __init__(self, filename=AERO_LOADING_DATA):
         self.C_a  = 0.515       # [m]
