@@ -115,10 +115,10 @@ def reaction_forces():
                      'R 2,z',
                      'R 3,z',
                      '    F',
-                     '  C 1',
-                     '  C 2',
-                     '  C 3',
-                     '  C 4']
+                     '  C_a 1',
+                     '  C_a 2',
+                     '  C_a 3',
+                     '  C_a 4']
     x = np.linalg.solve(A,b)
     return np.squeeze(x), r_force_names
 

@@ -42,14 +42,14 @@ My = 19633.84 # verification model
 Mz = -12318.44 # verification model
 eta = G.z_tilde
 
-C = D.C
+C = D.C_a
 h = D.h
-n = D.n
+n = D.n_st
 w_st = D.w_st
 h_st = D.h_st
 t_st = D.t_st
-t_skin = D.t_skin
-t_spar = D.t_spar
+t_skin = D.t_sk
+t_spar = D.t_sp
 A_stiff = D.A_stiff
 l_sk = D.l_sk_triangle
 I_zz = D.I_zz
@@ -61,14 +61,14 @@ dx = D.dx
 # Test values
 
 # h = 1
-# t_skin = 1
-# t_spar = 1
+# t_sk = 1
+# t_sp = 1
 # Vy = 1
 # Vz = 1
 # I_zz = 1
 # I_yy = 1
 # eta = 1
-# C = 3
+# C_a = 3
 
 
 def shear_flow_Vy():
@@ -551,11 +551,11 @@ if __name__ == '__main__':
 #     """
 #
 #     # Initialize simulation parameters
-#     x = np.arange(0, C+dx,dx)
+#     x = np.arange(0, C_a+dx,dx)
 #     x = np.append(x, x[-2::-1])
 #     sz = np.size(x)
 #     y = np.zeros(sz)
-#     stiff_loc = np.zeros((n,2))
+#     stiff_loc = np.zeros((n_st,2))
 #     stiff_counter = 1
 #     qb_current = 0  # start at cut
 #     qb_stiff_current = 0
@@ -565,7 +565,7 @@ if __name__ == '__main__':
 #
 #     perimeter = D.total_perimeter
 #     s_list = [m.pi/2, l_sk, l_sk, m.pi/2]  #list containing lengths of each skin 1,3,4,6
-#     spacing = perimeter/n
+#     spacing = perimeter/n_st
 #     perimeter_addition = 0
 #     s_current = 0
 #     seg_i = 0
@@ -576,9 +576,9 @@ if __name__ == '__main__':
 #     # Finally segment 5 is calculated
 #
 #     def qb_2_1(s):
-#         return -s*Vy*t_spar/I_zz
+#         return -s*Vy*t_sp/I_zz
 #     def qb_2_2(s):
-#         val = -eta*Vz*t_spar/I_yy
+#         val = -eta*Vz*t_sp/I_yy
 #         return np.ones_like(s) * val
 #
 #     qb_2_val = def_integral(qb_2_1, 0, h/2, num_var_integrals=2) + def_integral(qb_2_2, 0, h/2, num_var_integrals=1)
@@ -593,7 +593,7 @@ if __name__ == '__main__':
 #             print("Max qb value of {} found at x,y = {},{}".format(np.amax(qb_val_list), x[np.where(qb_val_list == np.amax(qb_val_list))], y[np.where(qb_val_list == np.amax(qb_val_list))]))
 #             break
 #
-#         if x[i] == h/2 or x[i] == C:
+#         if x[i] == h/2 or x[i] == C_a:
 #             s_current = 0
 #             # print("qb_current: ", qb_current)
 #             qb_lastval.append(qb_current)
@@ -611,12 +611,12 @@ if __name__ == '__main__':
 #             n_int2 = 1
 #
 #         elif seg_i == 1:
-#             y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C)
+#             y[i] = -((h/2)/(C_a-h/2))*x[i] + (((h/2)/(C_a-h/2))*C_a)
 #             n_int1 = 2
 #             n_int2 = 2
 #
 #         elif seg_i == 2:
-#             y[i] = -(-((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C))
+#             y[i] = -(-((h/2)/(C_a-h/2))*x[i] + (((h/2)/(C_a-h/2))*C_a))
 #             n_int1 = 2
 #             n_int2 = 2
 #
@@ -625,8 +625,8 @@ if __name__ == '__main__':
 #             n_int1 = 1
 #             n_int2 = 1
 #
-#         qb_i_1 = -Vy*t_skin*y[i]/I_zz
-#         qb_i_2 = -Vz*t_skin*(eta - x[i])/I_yy
+#         qb_i_1 = -Vy*t_sk*y[i]/I_zz
+#         qb_i_2 = -Vz*t_sk*(eta - x[i])/I_yy
 #         qb_i = [qb_i_1,qb_i_2]
 #
 #         def integrate_func1(s):
@@ -657,9 +657,9 @@ if __name__ == '__main__':
 #
 #     # base shear flow at 5
 #     def qb_5_1(s):
-#         return -Vy*t_spar*s/I_zz
+#         return -Vy*t_sp*s/I_zz
 #     def qb_5_2(s):
-#         val = -eta*Vz*t_spar/I_yy
+#         val = -eta*Vz*t_sp/I_yy
 #         return np.ones_like(s) * val
 #
 #     qb_5_val = def_integral(qb_5_1, -h/2, 0, num_var_integrals=1) + def_integral(qb_5_2, -h/2, 0, num_var_integrals=1) + qb_lastval[2]
@@ -684,8 +684,8 @@ if __name__ == '__main__':
 #
 #         s_current = y_spar[i]
 #
-#         qb_i_1 = -Vy*t_spar*y_spar[i]/I_zz
-#         qb_i_2 = -Vz*t_spar*(eta - x_spar[i])/I_yy
+#         qb_i_1 = -Vy*t_sp*y_spar[i]/I_zz
+#         qb_i_2 = -Vz*t_sp*(eta - x_spar[i])/I_yy
 #         qb_i = [qb_i_1,qb_i_2]
 #
 #         def integrate_func1(s):
@@ -751,16 +751,16 @@ if __name__ == '__main__':
 #
 #     #moment arm from trailing edge [vertical distance, horizontal distance] 1,3,4,6
 #     #for 2 and 5 = [0,eta],[0,eta]
-#     moment_arm_list = [[0,C+h/2],[h/2,C-h/2],[0,0],[h/2,C-h/2]]
+#     moment_arm_list = [[0,C_a+h/2],[h/2,C_a-h/2],[0,0],[h/2,C_a-h/2]]
 #
-#     m_b_1 = (C) * qb_1_v
-#     m_b_2 = (C - h/2) * qb_2_v
-#     m_b_3 = h/2 * qb_3_h + (C-h/2) * -qb_3_v
+#     m_b_1 = (C_a) * qb_1_v
+#     m_b_2 = (C_a - h/2) * qb_2_v
+#     m_b_3 = h/2 * qb_3_h + (C_a-h/2) * -qb_3_v
 #     m_b_4 = 0
-#     m_b_5 = (C - h/2) * qb_5_v
-#     m_b_6 = h/2 * qb_6_h + (C-h/2) * qb_6_v
+#     m_b_5 = (C_a - h/2) * qb_5_v
+#     m_b_6 = h/2 * qb_6_h + (C_a-h/2) * qb_6_v
 #
-#     m_vy = (C-eta) * Vy
+#     m_vy = (C_a-eta) * Vy
 #     m_vz = 0
 #
 #     #semicircle
@@ -791,7 +791,7 @@ if __name__ == '__main__':
 #             print("Max q value of {} found at outer section x,y = {},{}".format(q_val_list[max_val_i], x[max_val_i], y[max_val_i]))
 #             break
 #
-#         if x[i] == h/2 or x[i] == C:
+#         if x[i] == h/2 or x[i] == C_a:
 #             seg_i += 1
 #
 #         if x[i] <= h/2 and seg_i == 0:

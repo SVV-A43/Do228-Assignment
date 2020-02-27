@@ -6,7 +6,7 @@ from project.numerical.Section_Properties.cross_section import variable_integrat
 class Section_Tests(unittest.TestCase):
 
     # def test_perimeter(self):
-    #     analytical_perimeter = m.pi*(h/2) + 2*m.sqrt((h/2)**2+(C-h/2)**2)
+    #     analytical_perimeter = m.pi*(h/2) + 2*m.sqrt((h/2)**2+(C_a-h/2)**2)
     #     numerical_perimeter = perimeter_check
     #     assert
 

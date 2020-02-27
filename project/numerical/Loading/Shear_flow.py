@@ -34,14 +34,14 @@ eta = G.z_tilde
 # Test values
 
 # h = 2
-# t_skin = 1
-# t_spar = 1
+# t_sk = 1
+# t_sp = 1
 # Vy = 1
 # Vz = 1
 # I_zz = 1
 # I_yy = 1
 # eta = 1
-# C = 3
+# C_a = 3
 
 # Segment 2, then 1,3,4,6,5
 # define qb_segment#_1 as Vy and  qbsegment#_2 as Vz
