@@ -20,7 +20,9 @@ G = AileronGeometry()
 E = DistributionEquations()
 
 #############  OUR MODEL ################
+sample_steps = 50
 min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
+x_steps = np.linspace(min_x, max_x, sample_steps)
 
 def Vy(x):
     return E.shear_y(x)
