@@ -64,6 +64,7 @@ class AileronGeometry():
 
         ### Loads:
         self.P = 20.6 * 10**3       # [N]
+        self.__pressure = np.genfromtxt(filename, delimiter=',') * 10 ** 3
 
         ### Boundary Conditions
         self.bound_conds = np.zeros((11, 1))
@@ -74,7 +75,7 @@ class AileronGeometry():
 
 
         ### Class Attributes
-        self.__pressure = np.genfromtxt(filename, delimiter=',') * 10**3
+
         self.num_span_stations = len(self.__pressure[0, :])
         self.num_chord_stations = len(self.__pressure[:, 0])
 

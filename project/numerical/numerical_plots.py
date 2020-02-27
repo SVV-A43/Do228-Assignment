@@ -56,8 +56,8 @@ def plots_y_deformation(steps=50):
     for ax in axs.flat:
         ax.set(xlabel="x'")
 
-    for ax in axs.flat:
-        ax.label_outer()
+    # for ax in axs.flat:
+    #     ax.label_outer()
 
     # plt.tight_layout()
     plt.show()

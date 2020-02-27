@@ -11,10 +11,9 @@ author: lmaio
 import numpy as np
 import os
 import sys
-import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
+# This must come before the next imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.integration import def_integral
 from project.numerical.reaction_forces import reaction_forces
@@ -122,7 +121,7 @@ class DistributionEquations():
         return terms.sum()
     
     
-    def moment_about_y(self):
+    def moment_about_y(self, x):
         R1z = self.r[3]
         R2z = self.r[4]
         R3z = self.r[5]
