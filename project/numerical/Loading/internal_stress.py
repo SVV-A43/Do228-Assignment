@@ -47,20 +47,20 @@ for xi in x_steps:
     # Mz(xi) = -12318.44 # verification model
     eta = G.z_tilde
 
-    C = D.C
-    h = D.h
-    n = D.n
-    w_st = D.w_st
-    h_st = D.h_st
-    t_st = D.t_st
-    t_skin = D.t_skin
-    t_spar = D.t_spar
-    A_stiff = D.A_stiff
-    l_sk = D.l_sk_triangle
-    I_zz = D.I_zz
-    I_yy = D.I_yy
-    x_centroid = D.x_centroid
-    dx = D.dx
+C = D.C_a
+h = D.h
+n = D.n_st
+w_st = D.w_st
+h_st = D.h_st
+t_st = D.t_st
+t_skin = D.t_sk
+t_spar = D.t_sp
+A_stiff = D.A_stiff
+l_sk = D.l_sk_triangle
+I_zz = D.I_zz
+I_yy = D.I_yy
+x_centroid = D.x_centroid
+dx = D.dx
 
     def shear_flow_Vy():
 

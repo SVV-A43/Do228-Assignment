@@ -1,3 +1,4 @@
+from math import *
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,11 +33,12 @@ displacement_le = displacement[checknodes]
 displacement_hl = displacement[checknodes2]
 displacement_te = displacement[checknodes3]
 
+'''
 nodehinge3 = nodes[nodes.x.eq(2591) & nodes.y.eq(0) & nodes.z.eq(0)]
 check = displacement.node.isin(nodehinge3['node'])
 dhinge3 = displacement[check]
 print(dhinge3)
-
+'''
 #plotting the nodes to check if all nodes create the aileron
 x = nodes['x']
 y = nodes['y']
@@ -56,7 +58,34 @@ z_te = nodes_te['z']
 
 dy_le = displacement_le['dy']
 dy_hl = displacement_hl['dy']
+dz_hl = displacement_hl['dz']
 dy_te = displacement_te['dy']
+
+dy = np.array(dy_hl)
+dz = np.array(dz_hl)
+
+dtot = []
+'''
+for i in range(len(dy)):
+    dtot.append(sqrt((dy[i])**2+(dz[i])**2))
+'''
+
+for i in range(len(dy)):
+    dtot.append(dy[i]/cos(radians(28)))
+    
+dtotal = pd.Series(dtot)
+
+nodehinge3 = nodes[nodes.x.eq(2591) & nodes.y.eq(0) & nodes.z.eq(0)]
+check = displacement.node.isin(nodehinge3['node'])
+dhinge3 = displacement[check]
+print(dhinge3)
+
+nodehinge1 = nodes[nodes.x.eq(172) & nodes.y.eq(0) & nodes.z.eq(0)]
+check1 = displacement.node.isin(nodehinge1['node'])
+dhinge1 = displacement[check1]
+print(dhinge1)
+
+print(cos(radians(28)))
 
 '''
 plt.subplot(311)
@@ -64,7 +93,7 @@ plt.scatter(x_le, dy_le)
 plt.title('leading edge')
 '''
 #plt.subplot(312)
-plt.scatter(x_hl, dy_hl)
+plt.scatter(x_hl, dtotal)
 plt.title('hinge line')
 plt.xlabel('x-location [mm]')
 plt.ylabel('deflection [mm]')
@@ -79,5 +108,5 @@ plt.title('trailing edge')
 '''
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x_le, y_le, z_le)
+ax.scatter(x, y, z)
 '''

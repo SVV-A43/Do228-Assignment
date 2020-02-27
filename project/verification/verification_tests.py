@@ -19,12 +19,12 @@ from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.Loading.integration import  def_integral
 from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
                                                 reaction_forces
-from project.numerical.distribution_equations import deflection_y
+from project.numerical.distribution_equations import DistributionEquations
+from project.numerical.transformations import CoordinateTransforms
 
 
 
 class LoadingTests(unittest.TestCase):
-
     @staticmethod
     def calc_error(real, approx):
         error = real - approx
@@ -94,7 +94,7 @@ class LoadingTests(unittest.TestCase):
         start = 0
         end = 2
 
-        # n=1 means once variable integral
+        # n_st=1 means once variable integral
         ref_sol_n_1 = 6     # 3/2 * x**2
         ref_sol_n_2 = 4     # 1/2 * x**3
         ref_sol_n_3 = 2     # 1/8 * x**4
@@ -180,17 +180,19 @@ class LoadingTests(unittest.TestCase):
 
     def test_deflection_y(self):
         '''The deflection at x2 should be zero because this is how the reaction forces are calculated'''
+        E = DistributionEquations()
         G = AileronGeometry()
-        q_x = G.q_tilde()
-        r, _ = reaction_forces()
+        CT = CoordinateTransforms()
+
 
         ref_v_x1 = G.d_1*np.cos(G.theta)
         ref_v_x2 = 0
         ref_v_x3 = G.d_3*np.cos(G.theta)
 
-        v_x1 = deflection_y(G.x1, r, q_x)
-        v_x2 = deflection_y(G.x2, r, q_x)
-        v_x3 = deflection_y(G.x3, r, q_x)
+        v_x1 = E.deflection_y(G.x1)
+        v_x2 = E.deflection_y(G.x2)
+        v_x3 = E.deflection_y(G.x3)
+
 
         error1 = self.calc_error(ref_v_x1, v_x1)
         error2 = self.calc_error(ref_v_x2, v_x2)
