@@ -87,7 +87,7 @@ z_arr=np.array(zlist)
 
 ax = plt.axes(projection='3d')
 ax.scatter3D(x_arr, z_arr, P_arr, c=P_arr, cmap='Greens')
-ax.plot_trisurf(x_arr, z_arr, P_arr, cmap='viridis', edgecolor='none')
+#ax.plot_trisurf(x_arr, z_arr, P_arr, cmap='viridis', edgecolor='none')
 ax.set_xlabel('Spanwise coordinate x [m]')
 ax.set_ylabel('Chordwise coordinate z [m] ')
 ax.set_zlabel('Aerodynamic Load p [kN/m^2]')

@@ -1,10 +1,18 @@
+import os
+import sys
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
+
+# This must come before the next imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
+from project.numerical.distribution_equations import DistributionEquations
 from project.numerical.Loading.integration import def_integral
 from project.numerical.reaction_forces import AileronGeometry
 
-G = AileronGeometry ()
+G = AileronGeometry()
+E = DistributionEquations()
+
 
 # Real values
 C = 0.515
@@ -307,5 +315,5 @@ print(J1, J2)
 # plt.plot(x,y)
 plt.plot(x, q_val_list)
 # plt.plot(x,-y)
-plt.axis('equal')
+# plt.axis('equal')
 plt.show()

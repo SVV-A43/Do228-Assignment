@@ -11,10 +11,9 @@ author: lmaio
 import os
 import sys
 import numpy as np
-from tqdm import tqdm
+
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
-from project.numerical.Loading.interpolation import InterpolateRBF
 from project.numerical.Loading.integration import def_integral
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 
@@ -78,6 +77,8 @@ def equilibrium_eq_coefficients():
     a[10, 6] = -1*(np.sin(G.theta) * (G.x3 - G.x_a_1)**3) / (6 * G.E * G.I_zz)
     a[10, 7] = G.x3
     a[10, 8] = 1
+
+
 
     return a
 

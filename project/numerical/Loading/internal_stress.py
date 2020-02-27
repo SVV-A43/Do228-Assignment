@@ -1,15 +1,40 @@
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
+
+import os
+import sys
+
+# This must come before the next imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 from project.numerical.Loading.integration import def_integral
 from project.numerical.reaction_forces import AileronGeometry
 from project.numerical.Section_Properties.cross_section_properties import Cross_section_properties
+from project.numerical.distribution_equations import DistributionEquations
 
 
 # Initialize parameters
 
 D = Cross_section_properties()
 G = AileronGeometry()
+E = DistributionEquations()
+
+#############  OUR MODEL ################
+sample_steps = 50
+min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
+x_steps = np.linspace(min_x, max_x, sample_steps)
+
+def Vy(x):
+    return E.shear_y(x)
+def Vz(x):
+    return E.shear_z(x)
+def My(x):
+    return E.moment_about_y(x)
+def Mz(x):
+    return E.moment_about_z(x)
+def Tx(x):
+    return E.torsion_x(x)
+#########################################
 
 Vy = -36718.115  # verification model
 Vz = 61222.16  # verification model
