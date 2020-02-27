@@ -7,14 +7,7 @@ project: Do228-Assignment
 date: 2/20/2020
 author: lmaio
 """
-
-import os
-import sys
-
 import numpy as np
-
-# This must come before the next imports
-
 
 class InterpolateRBF():
     def __init__(self, *data_arrays, basis='linear', coeff_path=None,
@@ -77,10 +70,8 @@ class InterpolateRBF():
                 mat_A[i][j] = self._phi(r)
 
         self.coefficients = np.array([np.linalg.solve(mat_A, self._known_data)])
-        if self.__save_path:
-            np.savetxt(self.__save_path, self.coefficients, delimiter=',')
 
-
+    # Class Methods:
     def interpolate(self, input_coords):
         '''ONE VARIABLE ONLY'''
         if isinstance(input_coords, (float, int)):
@@ -97,36 +88,10 @@ class InterpolateRBF():
         phi_r = np.apply_along_axis(euclidean_norm_1d, 0, coords)
 
         # Calculate dot product using the first axis of both matrices
-        interp_pts = np.tensordot(np.squeeze(self.coefficients), np.squeeze(phi_r), axes=([0],[0]))
+        interp_pts = np.tensordot(np.squeeze(self.coefficients), np.squeeze(phi_r), axes=([0], [0]))
 
         return interp_pts
 
-
-def select_station(station_id):
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
-    from project.numerical.Loading.aileron_geometry import AileronGeometry
-    '''
-    :param station_id: station number
-    :return:
-    '''
-    aileron = AileronGeometry()
-    x, z, p = aileron.data_x_z_p()
-
-    start = station_id * 81
-    end = (station_id + 1) * 81
-    if end > p.shape[0]:
-        end = -1
-
-    return x[start:end], z[start:end], p[start:end]
-
-
-def main():
-    x, d = np.random.rand(2, 50)
-    my_inter = InterpolateRBF(x, d)
-
-    xi = 0.5
-    di = my_inter.interpolate(xi)
-    print(di)
 
 def plot_chordwise_interpolate():
     aileron = AileronGeometry()
@@ -146,10 +111,10 @@ def plot_chordwise_interpolate():
 
     plt.show()
 
+
 def plot_spanwise_interpolate():
     aileron = AileronGeometry()
     x = aileron.station_x_coords()
-    q_x_fn = aileron.q_tilde()
     qx = aileron.q_x
 
     station_fn = InterpolateRBF(x, qx)
@@ -168,7 +133,6 @@ def plot_spanwise_interpolate():
 def plot_aerotorque_interpolate():
     aileron = AileronGeometry()
     x = aileron.station_x_coords()
-    t_x_fn = aileron.tau_tilde()
     tx = aileron.tau_x
 
     station_fn = InterpolateRBF(x, tx)
@@ -187,7 +151,7 @@ def plot_aerotorque_interpolate():
 if __name__ == '__main__':
     from project.numerical.Loading.aileron_geometry import AileronGeometry
     from matplotlib import pyplot as plt
-    # plot_chordwise_interpolate()
-    # plot_spanwise_interpolate()
+
+    plot_chordwise_interpolate()
+    plot_spanwise_interpolate()
     plot_aerotorque_interpolate()
-    # main()

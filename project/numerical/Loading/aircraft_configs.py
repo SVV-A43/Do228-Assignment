@@ -13,7 +13,6 @@ import os
 import numpy as np
 
 from definitions import AERO_LOADING_DATA_Do228, AERO_LOADING_DATA_B737
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 
 

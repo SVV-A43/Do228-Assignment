@@ -27,7 +27,7 @@ from project.numerical.Loading.aircraft_configs import DornierDo228, Boeing737
 
 
 ### USE THIS SWITCH TO SET WHICH AIRCRAFT DATA TO USE ###
-VALIDATION_MODE = True                             #
+VALIDATION_MODE = True                          #
 #########################################################
 if VALIDATION_MODE:
     Aircraft = Boeing737
@@ -198,9 +198,6 @@ class AileronGeometry(Aircraft):
         tau_tilde_x = InterpolateRBF(x_coords, self.tau_x)
 
         return tau_tilde_x.interpolate
-
-
-
 
 
 

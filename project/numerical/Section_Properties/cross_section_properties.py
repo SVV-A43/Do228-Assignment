@@ -16,9 +16,10 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
+# This must come before the next imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 from project.numerical.Loading.aileron_geometry import AileronGeometry
-# CODE...
+
 
 class Cross_section_properties(AileronGeometry):
     def __init__(self):
