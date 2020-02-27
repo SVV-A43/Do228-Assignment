@@ -13,16 +13,13 @@ import sys
 import unittest
 
 import numpy as np
-from scipy.integrate import quad
-from scipy.interpolate import Rbf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.aileron_geometry import AileronGeometry
-from project.numerical.Loading.interpolation import InterpolateRBF
-from project.numerical.Loading.integration import def_integral, def_integral
+from project.numerical.Loading.integration import  def_integral
 from project.numerical.reaction_forces import equilibrium_eq_coefficients, equilibrium_eq_resultants, \
                                                 reaction_forces
-from project.numerical.deflection import deflection_y
+from project.numerical.deformations import deflection_y
 
 
 
@@ -32,78 +29,12 @@ class LoadingTests(unittest.TestCase):
     def calc_error(real, approx):
         error = real - approx
         rel_error = np.abs(error) / real
-        if rel_error == float('inf'):
+        if isinstance(rel_error, (float, int)):
+            if rel_error == float('inf'):
+                rel_error = 0
+        elif rel_error.any() == float('inf'):
             rel_error = 0
         return rel_error
-
-    def test_uni_variate_linear_RBF(self):
-        # Create random data to generate interpolation functions on
-        x, d = np.random.rand(2, 50)
-
-        # Create instance of our interpolation class
-        my_interpolant = InterpolateRBF(x, d)
-
-        # Create reference radial basis functiond
-        ref_interpolant = Rbf(x, d, function='linear')
-
-        # Generate points to test
-        xi = np.linspace(0, 1, 200)
-        # xi = zi = [0.5]
-
-        di = ref_interpolant(xi) # interpolated values
-        fi = my_interpolant.interpolate(xi)
-
-        error = self.calc_error(di, fi)
-        assert max(error) < 0.01
-
-        ### Cleanup
-        del x, d, my_interpolant, ref_interpolant, xi, di, fi
-
-
-    # Our RBF Interpolant is currently developed to handle ONLY multiple 1D datasets,
-    #       rather than bi-variate data. This would be a potential future update
-    #       This test is written for a previous version of the function where that did work
-    @unittest.expectedFailure
-    def test_bi_variate_linear_RBF(self):
-        # Create random data to generate interpolation functions on
-        x, z, d = np.random.rand(3, 50)
-
-        # Create instance of our interpolation class
-        my_i = InterpolateRBF(x, z, d)
-
-        # Create reference radial basis function
-        rbfi = Rbf(x, z, d, function='linear')
-
-        # Generate points to test
-        xi = zi = np.linspace(0, 1, 200)
-        # xi = zi = [0.5]
-
-        di = rbfi(xi, zi)  # interpolated values
-        fi = my_i.interpolate(xi, zi)
-
-        assert (fi == di).all()
-
-        ### Cleanup
-        del x, z, d, my_i, rbfi, xi, zi, di, fi
-
-
-    def test_definite_integral(self):
-        ### Test Setup
-        # Create rbf interpolation function of random data points
-        z, d = np.random.rand(2, 50)
-        interpolator = Rbf(z, d, function='linear')
-
-        # Run reference integration
-        ref_integral = quad(interpolator, min(z), max(z))[0]
-
-        # Our integral
-        num_integral = def_integral(interpolator, min(z), max(z), num_bins=1000)
-
-        error = self.calc_error(ref_integral, num_integral)
-        assert error < 0.01 # Error must be less than 1 %
-
-        ### Cleanup
-        del z, d, interpolator, ref_integral, num_integral, error
 
     def test_poly_definite_integral(self):
         ### Test Setup
@@ -115,19 +46,15 @@ class LoadingTests(unittest.TestCase):
 
 
         # Run reference integration
-        ref_integral = quad(fn_test1, start, end)[0]
         ref_sol = 10.666667
         # Our integral
         num_integral = def_integral(fn_test1, start, end, num_bins=100)
 
-        error = self.calc_error(ref_integral, num_integral)
-        error2 = self.calc_error(ref_sol, num_integral)
+        error = self.calc_error(ref_sol, num_integral)
         assert error < 0.001  # Error must be less than 0.1 %
-        assert error2 < 0.001
 
         ### Cleanup
-        del start, end, ref_integral, ref_sol, num_integral, error, error2
-
+        del start, end, ref_sol, num_integral, error
 
 
     def test_double_integral(self):
@@ -239,11 +166,13 @@ class LoadingTests(unittest.TestCase):
         r, _ = reaction_forces()
         q_x = G.q_tilde()
 
-        total_force_q = def_integral(q_x.interpolate, 0, G.l_a)
+        total_force_q = def_integral(q_x, 0, G.l_a)
 
-        sum_y = r[0] + r[1] + r[2] + r[6]*np.sin(G.theta) + G.P*np.sin(G.theta) + -1*total_force_q
-        sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) + G.P*np.cos(G.theta)
-        print(sum_y)
+        sum_y = r[0] + r[1] + r[2] + r[6]*np.sin(G.theta) - G.P*np.sin(G.theta) + -1*total_force_q
+        sum_z = r[3] + r[4] + r[5] + r[6]*np.cos(G.theta) - G.P*np.cos(G.theta)
+        print()
+        print(f'Sum forces y: {sum_y}')
+        print(f'Sum forces z: {sum_z}')
 
         # Should be very close to zero
         assert sum_y < 0.001
@@ -252,15 +181,16 @@ class LoadingTests(unittest.TestCase):
     def test_deflection_y(self):
         '''The deflection at x2 should be zero because this is how the reaction forces are calculated'''
         G = AileronGeometry()
+        q_x = G.q_tilde()
         r, _ = reaction_forces()
 
         ref_v_x1 = G.d_1*np.cos(G.theta)
         ref_v_x2 = 0
         ref_v_x3 = G.d_3*np.cos(G.theta)
 
-        v_x1 = deflection_y(G.x1, r)
-        v_x2 = deflection_y(G.x2, r)
-        v_x3 = deflection_y(G.x3, r)
+        v_x1 = deflection_y(G.x1, r, q_x)
+        v_x2 = deflection_y(G.x2, r, q_x)
+        v_x3 = deflection_y(G.x3, r, q_x)
 
         error1 = self.calc_error(ref_v_x1, v_x1)
         error2 = self.calc_error(ref_v_x2, v_x2)
