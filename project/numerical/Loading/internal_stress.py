@@ -3,12 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from project.numerical.Loading.integration import def_integral
 from project.numerical.reaction_forces import AileronGeometry
-from project.numerical.Section_Properties.crosssectionproperties import Crosssectionproperties
+from project.numerical.Section_Properties import cross_section_properties
 
 
 # Initialize parameters
 
-D = Crosssectionproperties()
+D = cross_section_properties
 G = AileronGeometry()
 
 Vy = -36718.115  # verification model
