@@ -59,13 +59,13 @@ class InternalStress( unittest.TestCase ):
         ver_model = 5.377416790820396e-05
         num_model = G.I_yy
         error = self.calc_error(ver_model, num_model)
-        assert error < 0.05
+        assert error < 0.01
 
     def test_Izz_ver_model(self):
         ver_model = 1.4221538884296291e-05
         num_model = G.I_zz
         error = self.calc_error(ver_model, num_model)
-        assert error < 0.05
+        assert error < 0.01
 
     def test_qb_vy_spar_analytical(self):
         """taking all values of the shear flow eqaution to be 1 and setting h of spar to 1 m,
@@ -104,6 +104,6 @@ class InternalStress( unittest.TestCase ):
 
         error1 = self.calc_error(analytical_qb_vy_bottom, qb_lastval[4])
         error2 = self.calc_error(analytical_qb_vy_top, qb_lastval[1])
-        assert error1 < 0.05
-        assert error2 < 0.05
+        assert error1 < 0.01
+        assert error2 < 0.01
 
