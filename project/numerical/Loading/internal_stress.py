@@ -23,7 +23,7 @@ E = DistributionEquations()
 #############  OUR MODEL ################
 sample_steps = 50
 min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
-x_steps = np.linspace(min_x, max_x, sample_steps)[21:22]
+x_steps = np.linspace(min_x, max_x, sample_steps)
 def Vy(xi):
     return E.shear_y(xi)
 def Vz(xi):
@@ -528,26 +528,20 @@ for xi in x_steps:
 
 max_vm_value = max(sigma_vm_max_all)
 max_vm_index = sigma_vm_max_all.index(max_vm_value)
+font = {'family' : 'normal',
+        'weight' : 'bold',
+        'size'   : 22}
+
+plt.rc('font', **font)
 print("Maximum von mises stress value {} found at station {}".format(max_vm_value,max_vm_index+1))
+xi_max = x_steps[max_vm_index]
+print("Vy: {} , Vz: {} , My: {} , Mz: {} , Tx: {}".format(Vy(xi_max),Vz(xi_max),My(xi_max),Mz(xi_max),Tx(xi_max)))
 fig = plt.figure()
 plt.plot(x_steps, sigma_vm_max_all)
-fig.suptitle('Maximum Von Mises stress at stations', fontsize=16)
-plt.xlabel('x-coordinate aileron', fontsize=14)
-plt.ylabel('Von Mises stress [Pa]', fontsize=14)
+fig.suptitle('Maximum Von Mises stress at stations')
+plt.xlabel('x-coordinate aileron')
+plt.ylabel('Von Mises stress [N/m^2]')
 plt.show()
-
-def plot_3(arr):
-    y_spar = np.arange(-h/2, h/2, dx)
-    fig, axs = plt.subplots(3)
-    axs[0].plot(D.x[0:len(arr[0])//2], arr[0][0:len(arr[0])//2])
-    axs[0].set_title('Upper outer section')
-
-    axs[1].plot(D.x[len(arr[0])//2:], arr[0][len(arr[0])//2:])
-    axs[1].set_title('Lower outer section')
-
-    axs[2].plot(y_spar, arr[1])
-    axs[2].set_title('Spar section')
-    plt.show()
 
 plot = True
 if plot:
@@ -555,48 +549,62 @@ if plot:
     plot_direct_stress = True
     plot_vonmises = True
     if plot_shear_flow:
+        fig = plt.figure()
         final_q_values = q_total_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(2)
-        fig.suptitle('Shear flow distribution at station of maximum Von Mises stress')
-        axs[0].plot(-D.x[0:len(final_q_values[0])//2], final_q_values[0][0:len(final_q_values[0])//2], 'C1', label='Upper outer section')
+        z = np.concatenate([-D.x,-D.h/2*np.ones(len(final_q_values[1]))])
+        y = np.concatenate([D.y,y_spar])
+        q_values = np.concatenate([final_q_values[0],final_q_values[1]])
+        plt.scatter(z,y,c=q_values)
+        plt.xlabel("-z [m]")
+        plt.ylabel("y [m]")
+        plt.title("Shear stress distribution at critical station")
+        plt.colorbar()
 
-        axs[0].plot(-D.x[len(final_q_values[0])//2:], final_q_values[0][len(final_q_values[0])//2:], 'C2', label='lower outer section')
+        plt.xlim(0.1,-D.C_a-0.1)
+        f = plt.gcf()
+        c_bar_ax = f.get_axes()[1]
+        c_bar_ax.set_ylabel('Shear stress [N/m]')
 
-        axs[1].plot(y_spar, final_q_values[1], 'C3', label='spar section')
-        axs[0].legend()
-        axs[1].legend()
-        axs[0].invert_xaxis()
-        axs[1].invert_xaxis()
         plt.show()
 
     if plot_direct_stress:
+        fig = plt.figure()
         sigma_xx_values = sigma_xx_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(3)
-        fig.suptitle('Direct stress distribution at station of maximum Von Mises stress')
-        axs[0].plot(D.x[0:len(sigma_xx_values[0])//2], sigma_xx_values[0][0:len(sigma_xx_values[0])//2])
-        axs[0].set_title('Upper outer section')
+        z = np.concatenate([-D.x,-D.h/2*np.ones(len(sigma_xx_values[1]))])
+        y = np.concatenate([D.y,y_spar])
+        stress_values = np.concatenate([sigma_xx_values[0],sigma_xx_values[1]])
+        plt.scatter(z,y,c=stress_values)
+        plt.xlabel("-z [m]")
+        plt.ylabel("y [m]")
+        plt.title("Direct stress distribution at critical station")
+        plt.colorbar()
 
-        axs[1].plot(D.x[len(sigma_xx_values[0])//2:], sigma_xx_values[0][len(sigma_xx_values[0])//2:])
-        axs[1].set_title('Lower outer section')
+        plt.xlim(0.1,-D.C_a-0.1)
+        f = plt.gcf()
+        c_bar_ax = f.get_axes()[1]
+        c_bar_ax.set_ylabel('Direct stress sigma_xx [N/m^2]')
 
-        axs[2].plot(y_spar, sigma_xx_values[1])
-        axs[2].set_title('Spar section')
 
         plt.show()
 
     if plot_vonmises:
+        fig = plt.figure()
         sigma_vm_values = sigma_vm_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(3)
-        fig.suptitle('Von Mises stress distribution at station of maximum Von Mises stress')
-        axs[0].plot(D.x[0:len(sigma_vm_values[0])//2], sigma_vm_values[0][0:len(sigma_vm_values[0])//2])
-        axs[0].set_title('Upper outer section')
+        z = np.concatenate([-D.x,-D.h/2*np.ones(len(sigma_vm_values[1]))])
+        y = np.concatenate([D.y,y_spar])
+        stress_values = np.concatenate([sigma_vm_values[0],sigma_vm_values[1]])
+        plt.scatter(z,y,c=stress_values)
+        plt.xlabel("-z [m]")
+        plt.ylabel("y [m]")
+        plt.title("Von Mises stress distribution at critical station")
+        plt.colorbar()
 
-        axs[1].plot(D.x[len(sigma_vm_values[0])//2:], sigma_vm_values[0][len(sigma_vm_values[0])//2:])
-        axs[1].set_title('Lower outer section')
+        plt.xlim(0.1,-D.C_a-0.1)
+        f = plt.gcf()
+        c_bar_ax = f.get_axes()[1]
+        c_bar_ax.set_ylabel('Von Mises stress [N/m^2]')
 
-        axs[2].plot(y_spar, sigma_vm_values[1])
-        axs[2].set_title('Spar section')
         plt.show()
