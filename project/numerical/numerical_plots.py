@@ -12,6 +12,8 @@ import numpy as np
 import os
 import sys
 import matplotlib.pyplot as plt
+import matplotlib.pylab as pl
+import matplotlib.gridspec as gridspec
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
@@ -38,27 +40,32 @@ def plots_y_distribution(steps=50):
         data[i, 2] = E.moment_about_z(x)
         data[i, 3] = E.shear_y(x)
 
+    fig = plt.figure(constrained_layout=False)
+    gs = fig.add_gridspec(2, 2)
 
-    fig, axs = plt.subplots(2, 2, sharex=True)
-    axs[0, 0].plot(data[:, 0], data[:, 1])
-    axs[0, 0].set(ylabel=r"$v(x)$ [m]")
-    axs[0, 0].set_title('Deflection in y')
 
-    axs[1, 0].plot(data[:, 0], data[:, 2])
-    axs[1, 0].set(ylabel=r"$M_z (x)$ [Nm]")
-    axs[1, 0].set_title("Bending moment about z")
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.plot(data[:, 0], data[:, 1])
+    ax1.set(ylabel=r"$v(x)$ [m]")
+    ax1.set_title('Deflection in y')
 
-    axs[1, 1].plot(data[:, 0], data[:, 3])
-    axs[1, 1].set(ylabel=r"$S_y (x)$ [N]")
-    axs[1, 1].set_title('Shear in y')
+    ax2 = fig.add_subplot(gs[1, :])
+    ax2.plot(data[:, 0], data[:, 2])
+    ax2.set(ylabel=r"$M_z (x)$ [Nm]")
+    ax2.set_title("Bending moment about z")
 
-    for ax in axs.flat:
+    ax3 = fig.add_subplot(gs[0, 1])
+    ax3.plot(data[:, 0], data[:, 3])
+    ax3.set(ylabel=r"$S_y (x)$ [N]")
+    ax3.set_title('Shear in y')
+
+    for ax in [ax1, ax2, ax3]:
         ax.set(xlabel="x")
 
-    # for ax in axs.flat:
-    #     ax.label_outer()
 
-    # plt.tight_layout()
+    # NEW FORMATTING
+
+
     plt.show()
 
 def plots_z_distribution(steps=50):
@@ -75,24 +82,30 @@ def plots_z_distribution(steps=50):
         data[i, 2] = E.moment_about_y(x)
         data[i, 3] = E.shear_z(x)
 
+    fig = plt.figure(constrained_layout=False)
+    gs = fig.add_gridspec(2, 2)
 
-    fig, axs = plt.subplots(2, 2, sharex=True)
-    axs[0, 0].plot(data[:, 0], data[:, 1])
-    axs[0, 0].set(ylabel=r"$v(x)$ [m]")
-    axs[0, 0].set_title('Deflection in z')
+    f_ax1 = fig.add_subplot(gs[0, 0])
+    f_ax1.plot(data[:, 0], data[:, 1])
+    f_ax1.set(ylabel=r"$v(x)$ [m]")
+    f_ax1.set_title('Deflection in z')
 
-    axs[1, 0].plot(data[:, 0], data[:, 2])
-    axs[1, 0].set(ylabel=r"$M_z (x)$ [Nm]")
-    axs[1, 0].set_title("Bending moment about y")
+    f_ax2 = fig.add_subplot(gs[1, :])
+    f_ax2.plot(data[:, 0], data[:, 2])
+    f_ax2.set(ylabel=r"$M_z (x)$ [Nm]")
+    f_ax2.set_title('Bending moment about y')
 
-    axs[1, 1].plot(data[:, 0], data[:, 3])
-    axs[1, 1].set(ylabel=r"$S_z (x)$ [N]")
-    axs[1, 1].set_title('Shear in z')
+    f_ax3 = fig.add_subplot(gs[0, 1])
+    f_ax3.plot(data[:, 0], data[:, 3])
+    # f_ax3.yaxis.tick_right()
+    # f_ax3.yaxis.set_label_position("right")
+    f_ax3.set(ylabel=r"$S_z (x)$ [N]")
+    f_ax3.set_title('Shear in z')
 
-    for ax in axs.flat:
-        ax.set(xlabel="x")
+    for ax in [f_ax1, f_ax2, f_ax3]:
+        ax.set(xlabel="x [m]")
 
-    plt.show()
+    pl.show()
 
 
 
@@ -109,28 +122,20 @@ def plots_torque_distribution(steps=50):
         data[i, 1] = E.angle_of_twist(x)
         data[i, 2] = E.torsion_x(x)
 
-    gs = gridspec.GridSpec(2, 2)
+    fig = plt.figure(constrained_layout=False)
+    gs = fig.add_gridspec(2, 1)
 
-    pl.figure()
-    ax = pl.subplot(gs[0, 0])  # row 0, col 0
-    pl.plot([0, 1])
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax1.plot(data[:, 0], -1*data[:, 1])
+    ax1.set(ylabel=r"$\theta(x)$ [deg/m]")
+    ax1.set_title('Angle of Twist')
 
-    ax = pl.subplot(gs[0, 1])  # row 0, col 1
-    pl.plot([0, 1])
+    ax2 = fig.add_subplot(gs[1, 0])
+    ax2.plot(data[:, 0], -1*data[:, 2])
+    ax2.set(ylabel=r"$T(x)$ [Nm]")
+    ax2.set_title("Torque")
 
-    ax = pl.subplot(gs[1, :])  # row 1, span all columns
-    pl.plot([0, 1])
-
-    fig, axs = plt.subplots(2, sharex=True)
-    axs[0].plot(data[:, 0], -1*data[:, 1])
-    axs[0].set(ylabel=r"$\theta(x)$ [deg/m]")
-    axs[0].set_title('Angle of Twist')
-
-    axs[1].plot(data[:, 0], -1*data[:, 2])
-    axs[1].set(ylabel=r"$T(x)$ [Nm]")
-    axs[1].set_title("Torque")
-
-    for ax in axs.flat:
+    for ax in [ax1, ax2]:
         ax.set(xlabel="x")
         ax.label_outer()
 
@@ -175,6 +180,6 @@ if __name__ == '__main__':
 
     plots_y_distribution()
     plots_z_distribution()
-    # plots_torque_distribution()
+    plots_torque_distribution()
 
     # plot_lateral_deflection()
