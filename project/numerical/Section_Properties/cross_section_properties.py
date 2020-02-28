@@ -25,7 +25,7 @@ class Cross_section_properties(AileronGeometry):
     def __init__(self):
         AileronGeometry.__init__(self)
 
-        self.dx = 0.000001
+        self.dx = 0.0001
 
         areas = self.areas()
         self.A_stiff, self.A_total, self.Am1, self.Am2 = areas
