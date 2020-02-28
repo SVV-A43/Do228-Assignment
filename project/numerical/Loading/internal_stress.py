@@ -23,7 +23,7 @@ E = DistributionEquations()
 #############  OUR MODEL ################
 sample_steps = 50
 min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
-x_steps = np.linspace(min_x, max_x, sample_steps)
+x_steps = np.linspace(min_x, max_x, sample_steps)[21:22]
 def Vy(xi):
     return E.shear_y(xi)
 def Vz(xi):
@@ -558,16 +558,17 @@ if plot:
     if plot_shear_flow:
         final_q_values = q_total_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(3)
+        fig, axs = plt.subplots(2)
         fig.suptitle('Shear flow distribution at station of maximum Von Mises stress')
-        axs[0].plot(D.x[0:len(final_q_values[0])//2], final_q_values[0][0:len(final_q_values[0])//2])
-        axs[0].set_title('Upper outer section')
+        axs[0].plot(-D.x[0:len(final_q_values[0])//2], final_q_values[0][0:len(final_q_values[0])//2], 'C1', label='Upper outer section')
 
-        axs[1].plot(D.x[len(final_q_values[0])//2:], final_q_values[0][len(final_q_values[0])//2:])
-        axs[1].set_title('Lower outer section')
+        axs[0].plot(-D.x[len(final_q_values[0])//2:], final_q_values[0][len(final_q_values[0])//2:], 'C2', label='lower outer section')
 
-        axs[2].plot(y_spar, final_q_values[1])
-        axs[2].set_title('Spar section')
+        axs[1].plot(y_spar, final_q_values[1], 'C3', label='spar section')
+        axs[0].legend()
+        axs[1].legend()
+        axs[0].invert_xaxis()
+        axs[1].invert_xaxis()
         fig.savefig('shear_flow_distribution.png')
         plt.show()
 
