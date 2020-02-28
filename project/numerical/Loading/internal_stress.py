@@ -534,7 +534,6 @@ plt.plot(x_steps, sigma_vm_max_all)
 fig.suptitle('Maximum Von Mises stress at stations', fontsize=16)
 plt.xlabel('x-coordinate aileron', fontsize=14)
 plt.ylabel('Von Mises stress [Pa]', fontsize=14)
-fig.savefig('vonmises_stations.png')
 plt.show()
 
 def plot_3(arr):
@@ -569,7 +568,6 @@ if plot:
         axs[1].legend()
         axs[0].invert_xaxis()
         axs[1].invert_xaxis()
-        fig.savefig('shear_flow_distribution.png')
         plt.show()
 
     if plot_direct_stress:
@@ -586,7 +584,6 @@ if plot:
         axs[2].plot(y_spar, sigma_xx_values[1])
         axs[2].set_title('Spar section')
 
-        fig.savefig('direct_stress_distribution.png')
         plt.show()
 
     if plot_vonmises:
@@ -602,5 +599,4 @@ if plot:
 
         axs[2].plot(y_spar, sigma_vm_values[1])
         axs[2].set_title('Spar section')
-        fig.savefig('von_mises_distribution.png')
         plt.show()
