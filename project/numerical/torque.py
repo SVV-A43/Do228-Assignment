@@ -58,17 +58,21 @@ for i in range(0,50):
     R = np.linalg.solve(A, F)
     q[i,0] = x_steps[i]
     q[i,1] = T(x_steps[i])
-    q[i,2] = R[0]
-    q[i,3] = R[1]
+    q[i,2] = R[0] #q1
+    q[i,3] = R[1] #q2
     q[i,4] = R[0]/t
     q[i,5] = (R[0]-R[1])/t_sp
     q[i,6] = R[1]/t
 
-plt.plot(q[0:50,0],q[0:50,4])
-plt.plot(q[0:50,0],q[0:50,5])
-plt.plot(q[0:50,0],q[0:50,6])
+def return_q():
+    return q
 
-plt.show()
+
+# plt.plot(q[0:50,0],q[0:50,4])
+# plt.plot(q[0:50,0],q[0:50,5])
+# plt.plot(q[0:50,0],q[0:50,6])
+#
+# plt.show()
 
 
 

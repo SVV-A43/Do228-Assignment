@@ -11,6 +11,7 @@ from project.numerical.Loading.integration import def_integral
 from project.numerical.reaction_forces import AileronGeometry
 from project.numerical.Section_Properties.cross_section_properties import Cross_section_properties
 from project.numerical.distribution_equations import DistributionEquations
+from project.numerical.torque import return_q
 
 
 # Initialize parameters
@@ -22,8 +23,7 @@ E = DistributionEquations()
 #############  OUR MODEL ################
 sample_steps = 50
 min_x, max_x = min(G.station_x_coords()), max(G.station_x_coords())
-x_steps = np.linspace(min_x, max_x, sample_steps)[:1]
-
+x_steps = np.linspace(min_x, max_x, sample_steps)
 def Vy(xi):
     return E.shear_y(xi)
 def Vz(xi):
@@ -34,18 +34,7 @@ def Mz(xi):
     return E.moment_about_z(xi)
 def Tx(xi):
     return E.torsion_x(xi)
-
-sigma_vm_all = [0]*sample_steps
-
-spar_segment = 0
-for xi in x_steps:
-    #########################################
-
-    # Vy(xi) = -36718.115  # verification model
-    # Vz(xi) = 61222.16  # verification model
-    # My(xi) = 19633.84 # verification model
-    # Mz(xi) = -12318.44 # verification model
-    eta = G.z_tilde
+q_all = return_q()
 
 C = D.C_a
 h = D.h
@@ -60,23 +49,44 @@ l_sk = D.l_sk_triangle
 I_zz = D.I_zz
 I_yy = D.I_yy
 x_centroid = D.x_centroid
-dx = D.dx
+dx = 0.0001
+eta = G.z_tilde
+
+def return_q(x):
+    qt1 = q_all[x,2]
+    qt2 = q_all[x,3]
+    return qt1,qt2
+
+sigma_vm_all = [0]*sample_steps
+q_total_all = [0]*sample_steps
+sigma_xx_all = [0]*sample_steps
+sigma_vm_max_all = []
+spar_segment = 0
+for xi in x_steps:
+    #########################################
+
+    # Vy(xi) = -36718.115  # verification model
+    # Vz(xi) = 61222.16  # verification model
+    # My(xi) = 19633.84 # verification model
+    # Mz(xi) = -12318.44 # verification model
+    q_t_1, q_t_2 = return_q(spar_segment)
 
     def shear_flow_Vy():
 
         h = D.h/2  # Define h to be h/2
+        vy_xi = Vy(xi)
         def qb_1_vy(s):
-            return -Vy(xi)*t_skin*h*h*np.sin(s)/I_zz
+            return -vy_xi*t_skin*h*h*np.sin(s)/I_zz
         def qb_6_vy(s):
-            return -Vy(xi)*t_skin*h*h*np.sin(s)/I_zz
+            return -vy_xi*t_skin*h*h*np.sin(s)/I_zz
         def qb_2_vy(s):
-            return -Vy(xi)*t_spar*s/I_zz
+            return -vy_xi*t_spar*s/I_zz
         def qb_5_vy(s):
-            return -Vy(xi)*t_spar*s/I_zz
+            return -vy_xi*t_spar*s/I_zz
         def qb_3_vy(s):
-            return -Vy(xi)*t_skin*(h-h/l_sk)*s/I_zz
+            return -vy_xi*t_skin*(h-h/l_sk)*s/I_zz
         def qb_4_vy(s):
-            return -Vy(xi)*t_skin*(-h/l_sk)*s/I_zz
+            return -vy_xi*t_skin*(-h/l_sk)*s/I_zz
 
         """Spar shear flow distribution"""
         y_spar = np.arange(-h, h, dx)
@@ -129,7 +139,7 @@ dx = D.dx
                 if abs(min_val) > max_val:
                     max_val = min_val
                 max_val_i = np.where(qb_val_list == max_val)
-                # print("Max qb value of {} found at x,y = {},{}".format(qb_val_list[max_val_i], x[max_val_i], y[max_val_i]))
+                # print("Max qbvy value of {} found at x,y = {},{}".format(qb_val_list[max_val_i], x[max_val_i], y[max_val_i]))
                 break
 
             # Switch segments
@@ -182,7 +192,7 @@ dx = D.dx
         return qb_lastval, qb_val_list, qb_spar_val_list
 
     qb_lastval_vy, qbvy_outer_val_list, qbvy_spar_val_list = shear_flow_Vy()
-
+    # print("station {} ended shear due to Vy".format(spar_segment))
     """Calculate shear center and redundant shear flows"""
 
     def shear_center():
@@ -218,7 +228,7 @@ dx = D.dx
                    def_integral(qb_5_vy, 0, m.pi/2, num_var_integrals=2)*h/2)/p2
 
         """Shear flows are then added to the base shear flows to calculate shear center"""
-        qs_0_1, qs_0_2 = 0,0 # Neglect redundant shear flow as calculation is faulty
+        qs_0_1, qs_0_2 = 0,0 # the redundant shear flow was set to 0, since the calculation was incorrect.
 
 
         qb_1 = qb_1 + qs_0_1
@@ -259,16 +269,19 @@ dx = D.dx
         eta = eta - h/2
         # print("Shear center location from leading edge",eta)
         return eta, qs_0_1, qs_0_2
-
+    # print("station {} ended shear center".format(spar_segment))
     eta, qs_0_1, qs_0_2 = shear_center()
+    # print("shear center location", eta)
     # print(eta, qs_0_1, qs_0_2)
+
     def shear_flow_Vz():
         x_centroid = -D.x_centroid
         h = D.h/2  # Define h to be h/2
+        vz_xi = Vz(xi)
         def qb_1_vz(s):
-            return -Vz(xi) * t_skin * h * (-(1 - np.cos(s)) * h - x_centroid) / I_yy
+            return -vz_xi * t_skin * h * (-(1 - np.cos(s)) * h - x_centroid) / I_yy
         def qb_6_vz(s):
-            return -Vz(xi) * t_skin * h * (-(1 - np.cos(s)) * h - x_centroid) / I_yy
+            return -vz_xi * t_skin * h * (-(1 - np.cos(s)) * h - x_centroid) / I_yy
         def qb_2_vz(s):
             val = -t_spar * (-h - x_centroid) / I_yy
             return np.ones_like(s) * val
@@ -276,9 +289,9 @@ dx = D.dx
             val = -t_spar * (-h - x_centroid) / I_yy
             return np.ones_like(s) * val
         def qb_3_vz(s):
-            return -Vz(xi) * t_skin * ((-h - x_centroid) - (((C - h) * s) / l_sk)) / I_yy
+            return -vz_xi * t_skin * ((-h - x_centroid) - (((C - h) * s) / l_sk)) / I_yy
         def qb_4_vz(s):
-            return -Vz(xi) * t_skin * ((-C - x_centroid) - ((C - h) * s)) / I_yy
+            return -vz_xi * t_skin * ((-C - x_centroid) + (((C - h) * s) /l_sk )) / I_yy
 
         """Spar shear flow distribution"""
         y_spar = np.arange(-h, h, dx)
@@ -312,7 +325,6 @@ dx = D.dx
         qb_val_list = np.zeros(sz)
 
         perimeter = D.total_perimeter
-        s_list = [m.pi/2, l_sk, l_sk, m.pi/2]  #list containing lengths of each skin 1,3,4,6
         i_list = []
         spacing = perimeter/n
         perimeter_addition = 0
@@ -326,7 +338,7 @@ dx = D.dx
                 qb_lastval[5] = qb_current
                 qb_val_list[i] = qb_current
                 # print("Finished calculation at segment {}, i={} with x,y {},{} and qb of {}".format(seg_i,i, x[i],y[i],qb_current))
-                # print("Max qb value of {} found at x,y = {},{}".format(np.amax(qb_val_list), x[np.where(qb_val_list == np.amax(qb_val_list))], y[np.where(qb_val_list == np.amax(qb_val_list))]))
+                # print("Max qbvz value of outer section {} found at x,y = {},{}".format(np.amax(qb_val_list), x[np.where(qb_val_list == np.amax(qb_val_list))], y[np.where(qb_val_list == np.amax(qb_val_list))]))
                 break
 
             # Switch segments
@@ -380,6 +392,9 @@ dx = D.dx
 
 
     qb_lastval_vz, qbvz_outer_val_list, qbvz_spar_val_list = shear_flow_Vz()
+    # q_vy_values = np.array([qbvy_outer_val_list,qbvy_spar_val_list])
+    # q_vz_values = np.array([qbvz_outer_val_list,qbvz_spar_val_list])
+    # y_spar = np.arange(-h/2, h/2, dx)
 
     """Final shear distribution is a linear combination of Vy(x) and Vz(x)"""
 
@@ -393,7 +408,7 @@ dx = D.dx
         x = np.append(x, x[-2::-1])
         sz = np.size(x)
         y = np.zeros(sz)
-        q_val_outer_list = np.array(qbvy_outer_val_list) + np.array(qbvz_outer_val_list)
+        q_val_outer_list = np.add(np.array(qbvy_outer_val_list),np.array(qbvz_outer_val_list))
         shear_stress_outer = np.zeros(sz)
         y_spar = np.arange(-h/2, h/2, dx)
         sz_spar = np.size(y_spar)
@@ -405,7 +420,7 @@ dx = D.dx
 
             # Switch segments
             if seg_i != 0 and x[i] == 0.:
-                q_val_outer_list[i] += qs_0_1
+                q_val_outer_list[i] += qs_0_1 - q_t_1
                 shear_stress_outer[i] = q_val_outer_list[i]/t_skin
                 max_val = np.amax(q_val_outer_list)
                 min_val = np.amin(q_val_outer_list)
@@ -419,23 +434,27 @@ dx = D.dx
                 seg_i += 1
 
             if seg_i == 0:
+                y[i] = m.sqrt((h/2)**2-(x[i]-h/2)**2)
                 q_val_outer_list[i] += qs_0_1 - q_t_1
 
             elif seg_i == 1:
+                y[i] = -((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C)
                 q_val_outer_list[i] += qs_0_2  - q_t_2
 
 
             elif seg_i == 2:
+                y[i] = -(-((h/2)/(C-h/2))*x[i] + (((h/2)/(C-h/2))*C))
                 q_val_outer_list[i] += qs_0_2  - q_t_2
 
             elif seg_i == 3:
+                y[i] = -m.sqrt((h/2)**2-(x[i]-h/2)**2)
                 q_val_outer_list[i] += qs_0_1  - q_t_1
 
             shear_stress_outer[i] = q_val_outer_list[i]/t_skin
 
         # Spar section
         for i in range(sz_spar):
-            q_val_spar_list[i] += qs_0_2 - qs_0_1 + q_t_3
+            q_val_spar_list[i] += qs_0_2 - qs_0_1 + q_t_1-q_t_2
             shear_stress_spar[i] = q_val_spar_list[i]/t_spar
 
         max_val = np.amax(q_val_spar_list)
@@ -445,9 +464,12 @@ dx = D.dx
         max_val_i = np.where(q_val_spar_list == max_val)
         # print("Max q value of {} found at spar x,y = {},{}".format(q_val_spar_list[max_val_i], h/2, y_spar[max_val_i]))
 
+        # print(q_val_spar_list[-10])
         final_q_values = np.array([q_val_outer_list,q_val_spar_list])
         shear_stress_values = np.array([shear_stress_outer,shear_stress_spar])
+
         return final_q_values, shear_stress_values
+    # print("station {} ended total shear flow".format(spar_segment))
 
     final_q_values, shear_stress_values = final_shear_flow()
 
@@ -460,9 +482,11 @@ dx = D.dx
         sigma_xx_z = np.zeros(sz)
         sigma_xx_y = np.zeros(sz)
         # outer section
+        my_xi = My(xi)
+        mz_xi = Mz(xi)
         for i in range(len(x)):
-            sigma_xx_z[i] = My(xi)*(-x[i]+x_centroid)/I_yy
-            sigma_xx_y[i] = Mz(xi)*y[i]/I_zz
+            sigma_xx_z[i] = my_xi*(-x[i]+x_centroid)/I_yy
+            sigma_xx_y[i] = mz_xi*y[i]/I_zz
 
         sigma_xx_outer = sigma_xx_z + sigma_xx_y
 
@@ -475,74 +499,67 @@ dx = D.dx
         sigma_xx_y = np.zeros(sz_spar)
         # outer section
         for i in range(sz_spar):
-            sigma_xx_z[i] = My(xi)*(-x_spar[i]+x_centroid)/I_yy
-            sigma_xx_y[i] = Mz(xi)*y_spar[i]/I_zz
+            sigma_xx_z[i] = my_xi*(-x_spar[i]+x_centroid)/I_yy
+            sigma_xx_y[i] = mz_xi*y_spar[i]/I_zz
 
         sigma_xx_spar = sigma_xx_z + sigma_xx_y
         sigma_xx_values = np.array([sigma_xx_outer,sigma_xx_spar])
         return sigma_xx_outer, sigma_xx_spar, sigma_xx_values
 
     sigma_xx_outer, sigma_xx_spar, sigma_xx_values = direct_stress()
+    # print("station {} ended direct stress".format(spar_segment))
 
     def von_mises_stress():
-        sigma_vm_outer = np.sqrt( 0.5*(sigma_xx_outer**2) + 3*(shear_stress_values[0]**2))
-        sigma_vm_spar = np.sqrt( 0.5*(sigma_xx_spar**2) + 3*(shear_stress_values[1]**2))
+        sigma_vm_outer = np.sqrt( (sigma_xx_outer**2) + 3*(shear_stress_values[0]**2))
+        sigma_vm_spar = np.sqrt( (sigma_xx_spar**2) + 3*(shear_stress_values[1]**2))
         sigma_vm_values = np.array([sigma_vm_outer,sigma_vm_spar])
         return sigma_vm_outer, sigma_vm_spar, sigma_vm_values
 
     sigma_vm_outer, sigma_vm_spar, sigma_vm_values = von_mises_stress()
 
     sigma_vm_all[spar_segment] = sigma_vm_values
+    q_total_all[spar_segment] = final_q_values
+    sigma_xx_all[spar_segment] = sigma_xx_values
+
+    sigma_vm_max_all.append(np.amax(np.concatenate([sigma_vm_all[spar_segment][0],sigma_vm_all[spar_segment][1]]))) # Maximum of this cross section
+
+    print("station {} ended calculation".format(spar_segment))
     spar_segment += 1
 
-sigma_vm_max_all = []
-for i in range(len(sigma_vm_all)):
-    # Find maximum of this cross section
-    sigma_vm_max_all.append(np.maximum(sigma_vm_all[i]))
-
 max_vm_value = max(sigma_vm_max_all)
-max_vm_index = [i for i, j in enumerate(sigma_vm_max_all) if j == max_vm_value]
+max_vm_index = sigma_vm_max_all.index(max_vm_value)
+print("Maximum von mises stress value {} found at station {}".format(max_vm_value,max_vm_index+1))
+fig = plt.figure()
+plt.plot(x_steps, sigma_vm_max_all)
+fig.suptitle('Maximum Von Mises stress at stations', fontsize=16)
+plt.xlabel('x-coordinate aileron', fontsize=14)
+plt.ylabel('Von Mises stress [Pa]', fontsize=14)
+fig.savefig('vonmises_stations.png')
+plt.show()
 
+def plot_3(arr):
+    y_spar = np.arange(-h/2, h/2, dx)
+    fig, axs = plt.subplots(3)
+    axs[0].plot(D.x[0:len(arr[0])//2], arr[0][0:len(arr[0])//2])
+    axs[0].set_title('Upper outer section')
 
-if __name__ == '__main__':
-    final_q_values, shear_stress_values = final_shear_flow()
-    q_vy_values = np.array([qbvy_outer_val_list,qbvy_spar_val_list])
-    q_vz_values = np.array([qbvz_outer_val_list,qbvz_spar_val_list])
-    plot_shear_flow = False
-    plot_shear_stress = False
-    plot_direct_stress = False
-    plot_vonmises = False
+    axs[1].plot(D.x[len(arr[0])//2:], arr[0][len(arr[0])//2:])
+    axs[1].set_title('Lower outer section')
+
+    axs[2].plot(y_spar, arr[1])
+    axs[2].set_title('Spar section')
+    plt.show()
+
+plot = True
+if plot:
+    plot_shear_flow = True
+    plot_direct_stress = True
+    plot_vonmises = True
     if plot_shear_flow:
+        final_q_values = q_total_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
         fig, axs = plt.subplots(3)
-        fig.suptitle('qb due to Vy(xi) Final shear flow values')
-        axs[0].plot(D.x[0:len(q_vy_values[0])//2], q_vy_values[0][0:len(q_vy_values[0])//2])
-        axs[0].set_title('Upper outer section')
-
-        axs[1].plot(D.x[len(q_vy_values[0])//2:], q_vy_values[0][len(q_vy_values[0])//2:])
-        axs[1].set_title('Lower outer section')
-
-        axs[2].plot(y_spar, q_vy_values[1])
-        axs[2].set_title('Spar section')
-
-        plt.show()
-        y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(3)
-        fig.suptitle('qb due to Vz(x) shear flow values')
-        axs[0].plot(D.x[0:len(q_vz_values[0])//2], q_vz_values[0][0:len(q_vz_values[0])//2])
-        axs[0].set_title('Upper outer section')
-
-        axs[1].plot(D.x[len(q_vz_values[0])//2:], q_vz_values[0][len(q_vz_values[0])//2:])
-        axs[1].set_title('Lower outer section')
-
-        axs[2].plot(y_spar, q_vz_values[1])
-        axs[2].set_title('Spar section')
-
-        plt.show()
-
-        y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(3)
-        fig.suptitle('Final shear flow values')
+        fig.suptitle('Shear flow distribution at station of maximum Von Mises stress')
         axs[0].plot(D.x[0:len(final_q_values[0])//2], final_q_values[0][0:len(final_q_values[0])//2])
         axs[0].set_title('Upper outer section')
 
@@ -551,29 +568,14 @@ if __name__ == '__main__':
 
         axs[2].plot(y_spar, final_q_values[1])
         axs[2].set_title('Spar section')
-
+        fig.savefig('shear_flow_distribution.png')
         plt.show()
 
-    if plot_shear_stress:
-        y_spar = np.arange(-h/2, h/2, dx)
-        fig, axs = plt.subplots(3)
-        shear_stress_values = shear_stress_values/(10**6)
-        fig.suptitle('Final shear stress values in MPA')
-        axs[0].plot(D.x[0:len(shear_stress_values[0])//2], shear_stress_values[0][0:len(shear_stress_values[0])//2])
-        axs[0].set_title('Upper outer section')
-
-        axs[1].plot(D.x[len(shear_stress_values[0])//2:], shear_stress_values[0][len(shear_stress_values[0])//2:])
-        axs[1].set_title('Lower outer section')
-
-        axs[2].plot(y_spar, shear_stress_values[1])
-        axs[2].set_title('Spar section')
-
-        plt.show()
     if plot_direct_stress:
+        sigma_xx_values = sigma_xx_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
         fig, axs = plt.subplots(3)
-        shear_stress_values = shear_stress_values/(10**6)
-        fig.suptitle('Direct stress distribution')
+        fig.suptitle('Direct stress distribution at station of maximum Von Mises stress')
         axs[0].plot(D.x[0:len(sigma_xx_values[0])//2], sigma_xx_values[0][0:len(sigma_xx_values[0])//2])
         axs[0].set_title('Upper outer section')
 
@@ -583,10 +585,14 @@ if __name__ == '__main__':
         axs[2].plot(y_spar, sigma_xx_values[1])
         axs[2].set_title('Spar section')
 
+        fig.savefig('direct_stress_distribution.png')
+        plt.show()
+
     if plot_vonmises:
+        sigma_vm_values = sigma_vm_all[max_vm_index]
         y_spar = np.arange(-h/2, h/2, dx)
         fig, axs = plt.subplots(3)
-        fig.suptitle('Von Mises stress distribution')
+        fig.suptitle('Von Mises stress distribution at station of maximum Von Mises stress')
         axs[0].plot(D.x[0:len(sigma_vm_values[0])//2], sigma_vm_values[0][0:len(sigma_vm_values[0])//2])
         axs[0].set_title('Upper outer section')
 
@@ -595,3 +601,5 @@ if __name__ == '__main__':
 
         axs[2].plot(y_spar, sigma_vm_values[1])
         axs[2].set_title('Spar section')
+        fig.savefig('von_mises_distribution.png')
+        plt.show()
