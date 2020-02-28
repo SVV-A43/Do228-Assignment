@@ -68,7 +68,9 @@ class InternalStress( unittest.TestCase ):
         assert error < 0.05
 
     def test_qb_vy_spar_analytical(self):
-        """taking all values of the shear flow eqaution to be 1 and setting h of spar to 1 m, the value at the spar ends can easily be calculated analytically and compared to the value computed numerically"""
+        """taking all values of the shear flow eqaution to be 1 and setting h of spar to 1 m,
+        the value at the spar ends can easily be calculated analytically
+        and compared to the value computed numerically"""
         analytical_qb_vy_top = -1 #N/m
         analytical_qb_vy_bottom = -1 #N/m
         h = 1  # Define h to be 2
