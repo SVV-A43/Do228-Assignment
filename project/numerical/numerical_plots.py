@@ -8,21 +8,16 @@ created: 26/02/2020
 author: lmaio
 """
 
-import numpy as np
 import os
 import sys
-import matplotlib.pyplot as plt
-import matplotlib.pylab as pl
-import matplotlib.gridspec as gridspec
 
+import matplotlib.pylab as pl
+import matplotlib.pyplot as plt
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))  # This must come before the next imports
 from project.numerical.Loading.aileron_geometry import AileronGeometry
 from project.numerical.distribution_equations import DistributionEquations
-
-
-
-#### Parts leading to deflection in Y direction
 
 # ------------------------ LOCAL REFERENCE FRAME -----------------------
 
@@ -43,7 +38,6 @@ def plots_y_distribution(steps=50):
     fig = plt.figure(constrained_layout=False)
     gs = fig.add_gridspec(2, 2)
 
-
     ax1 = fig.add_subplot(gs[0, 0])
     ax1.plot(data[:, 0], data[:, 1])
     ax1.set(ylabel=r"$v(x)$ [m]")
@@ -61,10 +55,6 @@ def plots_y_distribution(steps=50):
 
     for ax in [ax1, ax2, ax3]:
         ax.set(xlabel="x")
-
-
-    # NEW FORMATTING
-
 
     plt.show()
 
@@ -106,7 +96,6 @@ def plots_z_distribution(steps=50):
         ax.set(xlabel="x [m]")
 
     pl.show()
-
 
 
 def plots_torque_distribution(steps=50):
