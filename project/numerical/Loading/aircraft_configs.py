@@ -28,7 +28,7 @@ class DornierDo228():
         self.x_a = 30.0 / 100  # [m]
         self.x_a_1 = self.x2 - self.x_a / 2  # [m]
         self.x_a_2 = self.x2 + self.x_a / 2  # [m]
-        self.z_tilde = -0.35375  # [m] distance to shear center #FIXME: THIS IS FROM VERIFICATION MODEL
+        self.z_tilde = -0.3068834520928132 # [m] distance to shear center
         self.h = 24.8 / 100  # [m]
         self.d_1 = 1.034 / 100  # [m]
         self.d_3 = 2.066 / 100  # [m]
@@ -46,7 +46,7 @@ class DornierDo228():
         self.I_xx = None
         self.I_yy = 5.643650631210155e-05  # [m^4]
         self.I_zz = 1.4221372629975417e-05  # [m^4]
-        self.J = 0.00020500801555445113
+        self.J = 0.0002656923628031168
         self.J_polar = self.I_yy + self.I_zz  # [m^4]
 
         ### Constants:
