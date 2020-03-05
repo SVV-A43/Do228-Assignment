@@ -24,13 +24,17 @@ avgstress.columns = ['element', 'stress']
 check = elements.element_number.isin(avgstress['element']) 
 new = elements[check]
 
-test = elements.values.tolist()
+check2 = avgstress.element.isin(new['element_number'])
+avgstressfin = avgstress[check2]
+
+
+test = new.values.tolist()
 ncoor = nodes.values.tolist()
 x = []
 y = []
 z = []
 
-for i in range(len(elements)):
+for i in range(len(new)):
     j = 1
     
     xlocal = []
@@ -53,8 +57,8 @@ for i in range(len(elements)):
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x, z, y, s=8, cmap='hot', marker = 'o', c=avgstress['stress'])
-ax.view_init(25,150)
+ax.scatter(x, z, y, s=5, cmap='plasma', marker = 'o', c=avgstressfin['stress'])
+ax.view_init(45,130)
 ax.set_ylim3d(-502.5,102.5)
 ax.set_zlim3d(-200,200)
 
